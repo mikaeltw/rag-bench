@@ -1,8 +1,6 @@
 
 name: ci
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -23,9 +21,27 @@ jobs:
         run: black --check .
       - name: Tests
         run: pytest -q
-
-
-- name: Build dist
-  run: |
-    python -m pip install build
-    python -m build
+  extras:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [gcp, aws, azure]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install with extras
+        run: |
+          python -m pip install -U pip
+          pip install -e ".[dev,${{ matrix.target }}]"
+      - name: Tests (provider detection)
+        env:
+          EXPECT_GCP_INSTALLED: ${{ matrix.target == 'gcp' && 'true' || 'false' }}
+          EXPECT_AWS_INSTALLED: ${{ matrix.target == 'aws' && 'true' || 'false' }}
+          EXPECT_AZURE_INSTALLED: ${{ matrix.target == 'azure' && 'true' || 'false' }}
+        run: pytest -q tests/test_providers_detect.py
+      - name: Build dist
+        run: |
+          python -m pip install build
+          python -m build

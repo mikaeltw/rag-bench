@@ -2,11 +2,10 @@
 model:
   name: ${MODEL_NAME:-gpt-4o-mini}
 retriever:
-  k: 12           # candidate pool size before rerank
+  k: 12
 data:
   paths:
     - examples/data/sample.txt
 rerank:
-  method: auto    # auto | cross_encoder | cosine
+  method: cosine
   top_k: 4
-  cross_encoder_model: BAAI/bge-reranker-base

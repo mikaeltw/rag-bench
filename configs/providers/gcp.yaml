@@ -1,0 +1,18 @@
+
+model:
+  name: gpt-4o-mini
+retriever:
+  k: 4
+data:
+  paths:
+    - examples/data/sample.txt
+provider:
+  name: gcp
+  chat:
+    model: gemini-1.5-pro
+    location: us-central1
+    project_id: ${GCP_PROJECT}
+  embeddings:
+    model: text-embedding-004
+    location: us-central1
+    project_id: ${GCP_PROJECT}

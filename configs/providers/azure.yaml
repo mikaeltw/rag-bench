@@ -1,0 +1,18 @@
+
+model:
+  name: gpt-4o-mini
+retriever:
+  k: 4
+data:
+  paths:
+    - examples/data/sample.txt
+provider:
+  name: azure
+  chat:
+    deployment: gpt-4o-mini
+    endpoint: ${AZURE_OPENAI_ENDPOINT}
+    api_version: 2024-06-01
+  embeddings:
+    deployment: text-embedding-3-large
+    endpoint: ${AZURE_OPENAI_ENDPOINT}
+    api_version: 2024-06-01

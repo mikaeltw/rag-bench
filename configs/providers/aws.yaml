@@ -1,0 +1,15 @@
+
+model:
+  name: gpt-4o-mini
+retriever:
+  k: 4
+data:
+  paths:
+    - examples/data/sample.txt
+provider:
+  name: aws
+  region: ${AWS_REGION:-us-east-1}
+  chat:
+    model: anthropic.claude-3-5-sonnet-20240620-v1:0
+  embeddings:
+    model: amazon.titan-embed-text-v2:0
