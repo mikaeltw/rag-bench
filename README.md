@@ -42,3 +42,26 @@ rag-bench-many --configs "configs/*.yaml" --qa examples/qa/toy.jsonl
 - Open PRs against `main`
 
 See `RELEASE.md` for publishing steps.
+
+### Vector backends (optional)
+
+Use a managed vector store instead of local FAISS by adding a `vector:` block:
+
+```yaml
+vector:
+  name: azure_ai_search
+  endpoint: https://<your>.search.windows.net
+  index: my-index
+  # api_key: ${AZURE_SEARCH_API_KEY}
+```
+
+Other options:
+- `opensearch`: `hosts`, `index` (plus IAM/http_auth).
+- `matching_engine` (GCP): `project_id`, `location`, `index_id`, `endpoint_id`.
+
+Install extras:
+```bash
+pip install "rag-bench[azure]"  # for Azure AI Search
+pip install "rag-bench[aws]"    # for OpenSearch
+pip install "rag-bench[gcp]"    # for Matching Engine
+```
