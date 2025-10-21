@@ -1,17 +1,14 @@
-
-from __future__ import annotations
-import hashlib, json
+import hashlib,json
 from pathlib import Path
-from typing import Any
+D=Path('.ragbench_cache');D.mkdir(exist_ok=True,parents=True)
+K=lambda m,p: hashlib.sha256((m+'||'+p).encode()).hexdigest()
 
-CACHE_DIR = Path(".ragbench_cache"); CACHE_DIR.mkdir(exist_ok=True, parents=True)
-def _key(model: str, prompt: str) -> str: return hashlib.sha256((model+"||"+prompt).encode()).hexdigest()
-def cache_get(model: str, prompt: str):
-    p = CACHE_DIR / (_key(model,prompt)+".json")
-    if p.exists(): 
-        try: return json.loads(p.read_text(encoding="utf-8"))
+def cache_get(m,p):
+    f=D/(K(m,p)+'.json')
+    if f.exists():
+        try: return json.loads(f.read_text('utf-8'))
         except Exception: return None
     return None
-def cache_set(model: str, prompt: str, output: Any):
-    p = CACHE_DIR / (_key(model,prompt)+".json")
-    p.write_text(json.dumps(output), encoding="utf-8")
+
+def cache_set(m,p,o):
+    f=D/(K(m,p)+'.json'); f.write_text(json.dumps(o), 'utf-8')

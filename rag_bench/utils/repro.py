@@ -1,11 +1,10 @@
+import random,hashlib,time
 
-from __future__ import annotations
-import os, random, hashlib, time
-def set_seeds(seed: int=42):
-    random.seed(seed)
+def set_seeds(s=42):
+    random.seed(s)
     try:
-        import numpy as np; np.random.seed(seed)
+        import numpy as np; np.random.seed(s)
     except Exception: pass
+
 def make_run_id():
-    raw = f"{time.time_ns()}_{os.getpid()}"
-    return hashlib.sha1(raw.encode()).hexdigest()[:10]
+    return hashlib.sha1(str(time.time_ns()).encode()).hexdigest()[:10]

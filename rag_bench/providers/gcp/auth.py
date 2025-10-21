@@ -1,7 +1,6 @@
-
-def is_installed() -> bool:
+def is_installed():
     try:
-        import langchain_google_vertexai  # noqa: F401
+        import langchain_google_vertexai
         return True
     except Exception:
         return False
