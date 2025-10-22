@@ -1,0 +1,38 @@
+from typing import List, Optional
+
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI
+
+
+def build_chain(
+    docs: List[Document],
+    model: str = "gpt-4o-mini",
+    k: int = 4,
+    llm: Optional[object] = None,
+    embeddings: Optional[object] = None,
+    retriever: Optional[object] = None,
+):
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=120)
+    splits = splitter.split_documents(docs)
+    embed = embeddings or HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    if retriever is None:
+        vect = FAISS.from_documents(splits, embed)
+        retr = vect.as_retriever(search_kwargs={"k": k})
+    else:
+        retr = retriever
+    prompt = PromptTemplate.from_template(
+        "Use the context to answer.\nContext:\n{context}\n\nQuestion: {question}\nAnswer:"
+    )
+    llm = llm or ChatOpenAI(model=model, temperature=0)
+
+    def ctx_join(d):
+        return "\n\n".join(x.page_content for x in d)
+
+    chain = {"context": retr | ctx_join, "question": RunnablePassthrough()} | prompt | llm | StrOutputParser()
+    return chain, (lambda: {"pipeline": "naive_rag"})

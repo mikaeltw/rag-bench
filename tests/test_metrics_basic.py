@@ -1,5 +1,5 @@
+from rag_bench.eval.metrics import bow_cosine, context_recall, lexical_f1
 
-from rag_bench.eval.metrics import lexical_f1, bow_cosine, context_recall
 
 def test_metrics_sanity():
     a = "LangChain is a framework for LLM apps"

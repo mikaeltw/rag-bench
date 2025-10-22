@@ -1,6 +1,6 @@
-
 from rag_bench.eval.datasets import load_dataset
 from rag_bench.pipelines.hyde import build_chain
+
 
 def test_dataset_loading_and_hyde_chain():
     docs = load_dataset("docs/wiki")
