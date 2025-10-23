@@ -1,8 +1,9 @@
 import hashlib
 import json
 from pathlib import Path
+from typing import Any, Final, Optional
 
-D = Path(".ragbench_cache")
+D: Final[Path] = Path(".ragbench_cache")
 D.mkdir(exist_ok=True, parents=True)
 
 
@@ -11,7 +12,7 @@ def K(m: str, p: str) -> str:
     return hashlib.sha256((m + "||" + p).encode()).hexdigest()
 
 
-def cache_get(m, p):
+def cache_get(m: str, p: str) -> Optional[Any]:
     f = D / (K(m, p) + ".json")
     if f.exists():
         try:
@@ -21,6 +22,6 @@ def cache_get(m, p):
     return None
 
 
-def cache_set(m, p, o):
+def cache_set(m: str, p: str, o: Any) -> None:
     f = D / (K(m, p) + ".json")
     f.write_text(json.dumps(o), "utf-8")

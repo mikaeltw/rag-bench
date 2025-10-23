@@ -1,26 +1,32 @@
 import argparse
 import os
+from typing import Any, Optional, cast
 
+from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.runnables import RunnableSerializable
 from rich.console import Console
 
-from rag_bench.config import load_config
+from rag_bench.config import BenchConfig, load_config
 from rag_bench.eval.dataset_loader import load_texts_as_documents
 from rag_bench.pipelines import naive_rag
 from rag_bench.providers.base import build_embeddings_adapter
 from rag_bench.utils.cache import cache_get, cache_set
 from rag_bench.utils.callbacks.usage import UsageTracker
 from rag_bench.utils.repro import set_seeds
-from rag_bench.vector.base import build_vector_backend
+from rag_bench.vector.base import VectorBackend, build_vector_backend
 
 console = Console()
 
 
-def _pick_llm(cfg):
+def _pick_llm(cfg: BenchConfig) -> RunnableSerializable[Any, Any]:
     """Return a LangChain LLM object based on offline flag."""
     if getattr(cfg.runtime, "offline", False):
         # Local, CPU-friendly
         from langchain_huggingface import HuggingFacePipeline
-        from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers import pipeline as hf_pipeline
 
         # small, CPU-runner model
         model_id = "distilgpt2"
@@ -29,7 +35,7 @@ def _pick_llm(cfg):
         if tok.pad_token_id is None:
             tok.pad_token = tok.eos_token
 
-        gen = pipeline(
+        gen = hf_pipeline(
             task="text-generation",
             model=AutoModelForCausalLM.from_pretrained(model_id),
             tokenizer=tok,
@@ -38,18 +44,19 @@ def _pick_llm(cfg):
         )
 
         # deterministic, short answers, and safe for gpt2-family
-        gen.model.generation_config.update(
-            max_new_tokens=120,
-            do_sample=False,
-            repetition_penalty=1.05,
-            pad_token_id=tok.pad_token_id,
-            eos_token_id=tok.eos_token_id,
-        )
+        generation_config = getattr(gen.model, "generation_config", None)
+        if generation_config is not None:
+            generation_config.update(
+                max_new_tokens=120,
+                do_sample=False,
+                repetition_penalty=1.05,
+                pad_token_id=tok.pad_token_id,
+                eos_token_id=tok.eos_token_id,
+            )
 
-        llm = HuggingFacePipeline(pipeline=gen)
+        llm: RunnableSerializable[Any, Any] = HuggingFacePipeline(pipeline=gen)
         # Important: stop when the model tries to start a new Q/A block
-        llm = llm.bind(stop=["\nQuestion:"])
-        return llm
+        return cast(RunnableSerializable[Any, Any], llm.bind(stop=["\nQuestion:"]))
     else:
         # Cloud (OpenAI via langchain-openai)
         from rag_bench.providers.base import build_chat_adapter
@@ -57,14 +64,16 @@ def _pick_llm(cfg):
         prov = getattr(cfg, "provider", None)
         if prov:
             chat = build_chat_adapter(cfg.model_dump().get("provider"))
-            return chat.to_langchain()
+            if not chat:
+                raise RuntimeError("Provider configured but chat adapter unavailable")
+            return cast(RunnableSerializable[Any, Any], chat.to_langchain())
         else:
             from langchain_openai import ChatOpenAI
 
-            return ChatOpenAI(model=cfg.model.name, temperature=0)
+            return cast(RunnableSerializable[Any, Any], ChatOpenAI(model=cfg.model.name, temperature=0))
 
 
-def main():
+def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
     ap.add_argument("--question", required=True)
@@ -82,18 +91,19 @@ def main():
     elif dev in ("cuda",):
         os.environ.setdefault("RAG_BENCH_DEVICE", "cuda")
 
-    docs = load_texts_as_documents(cfg.data.paths)
+    docs: list[Document] = load_texts_as_documents(cfg.data.paths)
 
     # Embeddings: if you’re using the factory, it respects CPU/GPU globally.
-    emb = None
+    emb: Optional[Embeddings] = None
     prov = getattr(cfg, "provider", None)
     if prov:
         adapter = build_embeddings_adapter(cfg.model_dump().get("provider"))
-        emb = adapter.to_langchain()
+        if adapter:
+            emb = adapter.to_langchain()
 
     # Vector retriever (optional; safe fallback)
-    vec = build_vector_backend(cfg.model_dump().get("vector"))
-    retr = None
+    vec: Optional[VectorBackend] = build_vector_backend(cfg.model_dump().get("vector"))
+    retr: Optional[BaseRetriever] = None
     if vec and emb is not None:
         try:
             retr = vec.make_retriever(docs=None, embeddings=emb, k=cfg.retriever.k)

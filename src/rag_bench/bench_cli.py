@@ -3,11 +3,14 @@ import json
 import os
 from pathlib import Path
 from statistics import mean
+from typing import Any, Callable, Dict, Mapping, Tuple
 
 import yaml
+from langchain_core.documents import Document
+from langchain_core.runnables import RunnableSerializable
 from rich.console import Console
 
-from rag_bench.config import load_config
+from rag_bench.config import BenchConfig, load_config
 from rag_bench.eval.dataset_loader import load_texts_as_documents
 from rag_bench.eval.metrics import bow_cosine, context_recall, lexical_f1
 from rag_bench.eval.report import write_simple_report
@@ -20,10 +23,13 @@ from rag_bench.providers.base import build_chat_adapter, build_embeddings_adapte
 console = Console()
 
 
-def _choose_pipeline(cfg_path: str, docs):
+def _choose_pipeline(
+    cfg_path: str, docs: list[Document]
+) -> Tuple[BenchConfig, RunnableSerializable[str, str], Callable[[], Mapping[str, Any]], str]:
     cfg = load_config(cfg_path)
-    chat_adapter = build_chat_adapter(cfg.model_dump().get("provider")) if getattr(cfg, "provider", None) else None
-    emb_adapter = build_embeddings_adapter(cfg.model_dump().get("provider")) if getattr(cfg, "provider", None) else None
+    provider_cfg = cfg.model_dump().get("provider")
+    chat_adapter = build_chat_adapter(provider_cfg) if getattr(cfg, "provider", None) else None
+    emb_adapter = build_embeddings_adapter(provider_cfg) if getattr(cfg, "provider", None) else None
     llm_obj = chat_adapter.to_langchain() if chat_adapter else None
     emb_obj = emb_adapter.to_langchain() if emb_adapter else None
 
@@ -59,7 +65,7 @@ def _choose_pipeline(cfg_path: str, docs):
     return cfg, chain, debug, pipe_id
 
 
-def main():
+def main() -> None:
     ap = argparse.ArgumentParser(description="Evaluate a RAG pipeline on a QA set")
     ap.add_argument("--config", required=True)
     ap.add_argument("--qa", required=True)
@@ -70,7 +76,7 @@ def main():
 
     cfg2, chain, debug, pipe_id = _choose_pipeline(args.config, docs)
 
-    rows = []
+    rows: list[Dict[str, float]] = []
     with open(args.qa, "r", encoding="utf-8") as f:
         for line in f:
             ex = json.loads(line)
@@ -83,7 +89,7 @@ def main():
                 retrieved = "\n".join(r.get("preview", "") for r in dbg["retrieved"])
             elif dbg.get("candidates"):
                 retrieved = "\n".join(r.get("preview", "") for r in dbg["candidates"][:5])
-            metrics = {
+            metrics: Dict[str, float] = {
                 "lexical_f1": lexical_f1(ans, ref),
                 "bow_cosine": bow_cosine(ans, ref),
                 "context_recall": context_recall(ref, retrieved) if retrieved else 0.0,
@@ -94,10 +100,12 @@ def main():
                 f"Cos={metrics['bow_cosine']:.3f} "
                 f"Ctx={metrics['context_recall']:.3f}"
             )
-    avg = {k: mean(r[k] for r in rows) if rows else 0.0 for k in ["lexical_f1", "bow_cosine", "context_recall"]}
+    avg: Dict[str, float] = {
+        k: mean(r[k] for r in rows) if rows else 0.0 for k in ["lexical_f1", "bow_cosine", "context_recall"]
+    }
     console.rule("[bold green]Averages")
     console.print(avg)
-    summary = {"pipeline": pipe_id, "avg_metrics": avg, "num_examples": len(rows)}
+    summary: Dict[str, Any] = {"pipeline": pipe_id, "avg_metrics": avg, "num_examples": len(rows)}
     report_path = write_simple_report(
         question=f"Benchmark: {pipe_id} on {Path(args.qa).name}",
         answer=json.dumps(summary, indent=2),

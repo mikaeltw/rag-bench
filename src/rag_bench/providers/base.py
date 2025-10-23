@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Mapping, Optional, Protocol
 
 
 class ChatAdapter(Protocol):
@@ -9,7 +9,7 @@ class EmbeddingsAdapter(Protocol):
     def to_langchain(self) -> Any: ...
 
 
-def build_chat_adapter(cfg: Dict[str, Any]) -> Optional[ChatAdapter]:
+def build_chat_adapter(cfg: Mapping[str, Any] | None) -> Optional[ChatAdapter]:
     if not cfg:
         return None
     name = (cfg.get("name") or "").lower()
@@ -29,7 +29,7 @@ def build_chat_adapter(cfg: Dict[str, Any]) -> Optional[ChatAdapter]:
     raise ValueError(f"Unknown provider: {name}")
 
 
-def build_embeddings_adapter(cfg: Dict[str, Any]) -> Optional[EmbeddingsAdapter]:
+def build_embeddings_adapter(cfg: Mapping[str, Any] | None) -> Optional[EmbeddingsAdapter]:
     if not cfg:
         return None
     name = (cfg.get("name") or "").lower()

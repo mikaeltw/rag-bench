@@ -1,6 +1,9 @@
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from .hardware import wants_cpu
+
+if TYPE_CHECKING:
+    from langchain_huggingface import HuggingFaceEmbeddings
 
 
 # Centralized factory for HuggingFaceEmbeddings
@@ -9,7 +12,7 @@ def make_hf_embeddings(
     *,
     model_kwargs: Optional[Dict[str, Any]] = None,
     encode_kwargs: Optional[Dict[str, Any]] = None,
-):
+) -> "HuggingFaceEmbeddings":
     """
     Create a HuggingFaceEmbeddings with device already set from global policy.
     Usage everywhere:

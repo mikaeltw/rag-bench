@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .hardware import wants_cpu
+
+if TYPE_CHECKING:
+    import torch
 
 
 def device_str() -> str:
@@ -16,7 +19,7 @@ def device_str() -> str:
         return "cpu"
 
 
-def to_device(x: Any):
+def to_device(x: Any) -> Any:
     """Move a torch tensor/module to the global device (no-op if torch missing)."""
     try:
         import torch  # noqa: F401
@@ -29,7 +32,7 @@ def to_device(x: Any):
     return x
 
 
-def new_tensor(data, *, dtype=None):
+def new_tensor(data: Any, *, dtype: "torch.dtype | None" = None) -> "torch.Tensor":
     """Create a tensor on the global device."""
     import torch
 

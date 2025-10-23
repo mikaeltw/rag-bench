@@ -1,12 +1,19 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Mapping
+
 from .auth import is_installed
+
+if TYPE_CHECKING:
+    from langchain_aws import BedrockEmbeddings
 
 
 class BedrockEmbeddingsAdapter:
-    def __init__(self, root_cfg, cfg):
+    def __init__(self, root_cfg: Mapping[str, Any], cfg: Mapping[str, Any]):
         self.root = root_cfg
         self.cfg = cfg
 
-    def to_langchain(self):
+    def to_langchain(self) -> "BedrockEmbeddings":
         if not is_installed():
             raise RuntimeError("Install: rag-bench[aws]")
         from langchain_aws import BedrockEmbeddings

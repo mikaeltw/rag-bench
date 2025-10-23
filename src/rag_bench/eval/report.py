@@ -1,9 +1,9 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Mapping
 
 
-def _render_extras(extras: Dict[str, Any]) -> str:
+def _render_extras(extras: Mapping[str, Any]) -> str:
     if not extras:
         return ""
     html = ['<div class="section"><h2>Debug</h2>']
@@ -43,7 +43,12 @@ def _render_extras(extras: Dict[str, Any]) -> str:
     return "\n".join(html)
 
 
-def write_simple_report(question: str, answer: str, cfg: Dict, extras: Dict | None = None) -> str:
+def write_simple_report(
+    question: str,
+    answer: str,
+    cfg: Mapping[str, Any],
+    extras: Mapping[str, Any] | None = None,
+) -> str:
     reports = Path("reports")
     reports.mkdir(exist_ok=True, parents=True)
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")

@@ -5,3 +5,4 @@ include CHANGELOG.md
 recursive-include configs *.yaml
 recursive-include examples *.txt *.md *.jsonl
 recursive-include rag_bench *.py
+include src/rag_bench/py.typed

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from langchain_core.documents import Document
+
 from rag_bench.eval.dataset_loader import load_texts_as_documents
 
 DATASETS_ROOT = Path("examples/datasets")
@@ -18,7 +20,7 @@ def list_datasets() -> list[str]:
     return sorted(set(out))
 
 
-def load_dataset(name: str):
+def load_dataset(name: str) -> list[Document]:
     """Load a dataset by name like 'docs/wiki' -> examples/datasets/docs/wiki/*.txt|*.md"""
     path = DATASETS_ROOT / name
     if not path.exists():

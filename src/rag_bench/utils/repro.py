@@ -3,7 +3,7 @@ import random
 import time
 
 
-def set_seeds(s=42):
+def set_seeds(s: int = 42) -> None:
     random.seed(s)
     try:
         import numpy as np
@@ -13,5 +13,5 @@ def set_seeds(s=42):
         pass
 
 
-def make_run_id():
+def make_run_id() -> str:
     return hashlib.sha1(str(time.time_ns()).encode()).hexdigest()[:10]

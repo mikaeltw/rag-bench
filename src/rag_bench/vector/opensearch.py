@@ -1,4 +1,16 @@
-def _require():
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Type
+
+from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from langchain_core.vectorstores import VectorStoreRetriever
+
+if TYPE_CHECKING:
+    from langchain_community.vectorstores import OpenSearchVectorSearch
+
+
+def _require() -> Type["OpenSearchVectorSearch"]:
     try:
         from langchain_community.vectorstores import OpenSearchVectorSearch
 
@@ -8,16 +20,33 @@ def _require():
 
 
 class OpenSearchBackend:
-    def __init__(self, cfg):
+    def __init__(self, cfg: Mapping[str, Any]):
         self.cfg = cfg
 
-    def make_retriever(self, *, docs, embeddings, k: int):
+    def make_retriever(
+        self,
+        *,
+        docs: Optional[List[Document]],
+        embeddings: Embeddings,
+        k: int,
+    ) -> VectorStoreRetriever:
         V = _require()
         hosts = self.cfg.get("hosts")
+        opensearch_url = self.cfg.get("opensearch_url")
         idx = self.cfg.get("index")
-        if not hosts or not idx:
-            raise ValueError("hosts/index required")
+        if not idx:
+            raise ValueError("index required")
+        if not opensearch_url and not hosts:
+            raise ValueError("opensearch_url or hosts required")
+        if not opensearch_url and hosts:
+            if isinstance(hosts, list) and hosts:
+                opensearch_url = hosts[0]
+            else:
+                opensearch_url = hosts
+        if not isinstance(opensearch_url, str):
+            raise ValueError("opensearch_url must resolve to a string")
         vs = V(
+            opensearch_url=opensearch_url,
             index_name=idx,
             embedding_function=embeddings,
             hosts=hosts,

@@ -1,7 +1,7 @@
 from importlib.resources import files
-from pathlib import Path
+from importlib.resources.abc import Traversable
 
 
 def get_resource_path(relative: str) -> str:
-    base = files("rag_bench").joinpath("resources")
-    return str(Path(base).joinpath(*relative.split("/")))
+    base: Traversable = files("rag_bench").joinpath("resources")
+    return str(base.joinpath(*relative.split("/")))

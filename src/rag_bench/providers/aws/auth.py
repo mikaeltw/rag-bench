@@ -1,4 +1,4 @@
-def is_installed():
+def is_installed() -> bool:
     try:
         import langchain_aws  # noqa: F401
 

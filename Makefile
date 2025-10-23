@@ -19,6 +19,7 @@ lint:
 	flake8
 	isort --check-only .
 	black --check .
+	mypy src/rag_bench
 
 uv-sync:
 	uv venv || true

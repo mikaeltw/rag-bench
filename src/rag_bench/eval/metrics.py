@@ -7,7 +7,7 @@ def _tok(s: str) -> list[str]:
     return [t for t in normalized.split() if t]
 
 
-def lexical_f1(p, r):
+def lexical_f1(p: str, r: str) -> float:
     P = _tok(p)
     R = _tok(r)
     if not P or not R:
@@ -19,7 +19,7 @@ def lexical_f1(p, r):
     return 0.0 if pr + rc == 0 else 2 * pr * rc / (pr + rc)
 
 
-def bow_cosine(p, r):
+def bow_cosine(p: str, r: str) -> float:
     P = Counter(_tok(p))
     R = Counter(_tok(r))
     if not P or not R:

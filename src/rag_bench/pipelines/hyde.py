@@ -1,16 +1,16 @@
-from __future__ import annotations
-
 import os
-from typing import List, Optional
+from typing import Any, Callable, Dict, List, Optional, cast
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough, RunnableSerializable
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from rag_bench.pipelines.base import BuildResult
 from rag_bench.utils.factories import make_hf_embeddings
 
 HYP_PROMPT = """You will draft a hypothetical answer to help retrieve relevant passages.
@@ -26,9 +26,9 @@ def build_chain(
     docs: List[Document],
     model: str = "gpt-4o-mini",
     k: int = 4,
-    llm: Optional[object] = None,
-    embeddings: Optional[object] = None,
-):
+    llm: Optional[RunnableSerializable[Any, Any]] = None,
+    embeddings: Optional[Embeddings] = None,
+) -> BuildResult:
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=120)
     splits = splitter.split_documents(docs)
     embed = embeddings or make_hf_embeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -49,18 +49,30 @@ def build_chain(
 
     llm_answer = llm or ChatOpenAI(model=model, temperature=0)
 
-    def build_context(question: str) -> str:
-        hyp = gen_hyp(question)
-        docs_h = vect.similarity_search(hyp, k=k)
-        context = "\n\n".join(d.page_content for d in docs_h)
-        build_context._last_debug = {
-            "pipeline": "hyde",
-            "hypothesis": hyp,
-            "retrieved": [{"source": d.metadata.get("source", ""), "preview": d.page_content[:160]} for d in docs_h],
-        }
-        return context
+    class _ContextBuilder:
+        def __init__(self, generator: Callable[[str], str]) -> None:
+            self._generator = generator
+            self._last_debug: Dict[str, Any] = {"pipeline": "hyde", "hypothesis": "", "retrieved": []}
 
-    build_context._last_debug = {"pipeline": "hyde", "hypothesis": "", "retrieved": []}
+        def __call__(self, question: str) -> str:
+            hyp = self._generator(question)
+            docs_h = vect.similarity_search(hyp, k=k)
+            context = "\n\n".join(d.page_content for d in docs_h)
+            self._last_debug = {
+                "pipeline": "hyde",
+                "hypothesis": hyp,
+                "retrieved": [
+                    {"source": d.metadata.get("source", ""), "preview": d.page_content[:160]} for d in docs_h
+                ],
+            }
+            return context
+
+        @property
+        def last_debug(self) -> Dict[str, Any]:
+            return self._last_debug
+
+    context_builder = _ContextBuilder(gen_hyp)
+
     template = (
         "You are a helpful assistant. Use the context to answer.\n"
         "If the answer is not in the context, say you don't know.\n"
@@ -68,14 +80,18 @@ def build_chain(
     )
     prompt = PromptTemplate.from_template(template)
 
-    chain = (
-        {"context": RunnableLambda(build_context), "question": RunnablePassthrough()}
+    chain = cast(
+        RunnableSerializable[str, str],
+        {
+            "context": RunnableLambda(context_builder),
+            "question": RunnablePassthrough(),
+        }
         | prompt
         | llm_answer
-        | StrOutputParser()
+        | StrOutputParser(),
     )
 
-    def debug():
-        return getattr(build_context, "_last_debug", {"pipeline": "hyde"})
+    def debug() -> Dict[str, Any]:
+        return context_builder.last_debug
 
     return chain, debug

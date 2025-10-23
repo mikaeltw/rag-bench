@@ -4,11 +4,14 @@ import json
 import os
 from pathlib import Path
 from statistics import mean
+from typing import Any, Callable, Dict, Iterator, Mapping, Tuple
 
 import yaml
+from langchain_core.documents import Document
+from langchain_core.runnables import RunnableSerializable
 from rich.console import Console
 
-from rag_bench.config import load_config
+from rag_bench.config import BenchConfig, load_config
 from rag_bench.eval.dataset_loader import load_texts_as_documents
 from rag_bench.eval.metrics import bow_cosine, context_recall, lexical_f1
 from rag_bench.pipelines import hyde as hy
@@ -20,10 +23,13 @@ from rag_bench.providers.base import build_chat_adapter, build_embeddings_adapte
 console = Console()
 
 
-def choose(cfg_path: str, docs):
+def choose(
+    cfg_path: str, docs: list[Document]
+) -> Tuple[str, RunnableSerializable[str, str], Callable[[], Mapping[str, Any]], BenchConfig]:
     cfg = load_config(cfg_path)
-    chat_adapter = build_chat_adapter(cfg.model_dump().get("provider")) if getattr(cfg, "provider", None) else None
-    emb_adapter = build_embeddings_adapter(cfg.model_dump().get("provider")) if getattr(cfg, "provider", None) else None
+    provider_cfg = cfg.model_dump().get("provider")
+    chat_adapter = build_chat_adapter(provider_cfg) if getattr(cfg, "provider", None) else None
+    emb_adapter = build_embeddings_adapter(provider_cfg) if getattr(cfg, "provider", None) else None
     llm_obj = chat_adapter.to_langchain() if chat_adapter else None
     emb_obj = emb_adapter.to_langchain() if emb_adapter else None
 
@@ -55,7 +61,7 @@ def choose(cfg_path: str, docs):
     return "naive", chain, debug, cfg
 
 
-def main():
+def main() -> None:
     ap = argparse.ArgumentParser(description="Run multiple configs and produce a combined HTML report")
     ap.add_argument("--configs", required=True)
     ap.add_argument("--qa", required=True)
@@ -65,15 +71,15 @@ def main():
     cfg = load_config(first)
     docs = load_texts_as_documents(cfg.data.paths)
 
-    def iter_jsonl(path):
+    def iter_jsonl(path: str) -> Iterator[Dict[str, Any]]:
         with open(path, "r", encoding="utf-8") as f:
             for line in f:
                 yield json.loads(line)
 
-    results = []
+    results: list[Dict[str, Any]] = []
     for p in sorted(glob.glob(args.configs)):
         pid, chain, debug, _ = choose(p, docs)
-        rows = []
+        rows: list[Dict[str, float]] = []
         for ex in iter_jsonl(args.qa):
             q = ex["question"]
             ref = ex["reference_answer"]
