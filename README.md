@@ -86,3 +86,10 @@ CI runs:
 | **cloud-aws** | `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `BEDROCK_MODEL` | AWS Bedrock chat smoke test |
 | **cloud-azure** | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION` | Azure OpenAI chat smoke test |
 | **vector-smokes** | `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_INDEX`, `OPENSEARCH_HOST`, `OPENSEARCH_INDEX`, `ME_INDEX_ID`, `ME_ENDPOINT_ID`, `VERTEX_LOCATION` | Vector store backends |
+
+### Device (CPU/GPU)
+
+RAG-Bench uses GPU by default when available. Force CPU globally by setting:
+
+```bash
+RAG_BENCH_DEVICE=cpu python run.py --config ... --question ...

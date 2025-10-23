@@ -5,12 +5,13 @@ from typing import List, Optional
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_openai import ChatOpenAI
+
+from rag_bench.utils.factories import make_hf_embeddings
 
 HYP_PROMPT = """You will draft a hypothetical answer to help retrieve relevant passages.
 Question: {question}
@@ -30,7 +31,7 @@ def build_chain(
 ):
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=120)
     splits = splitter.split_documents(docs)
-    embed = embeddings or HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embed = embeddings or make_hf_embeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vect = FAISS.from_documents(splits, embed)
 
     openai_ok = bool(os.environ.get("OPENAI_API_KEY"))

@@ -1,0 +1,28 @@
+from __future__ import annotations
+from typing import Any
+from .hardware import wants_cpu
+
+def device_str() -> str:
+    try:
+        import torch
+        if wants_cpu():
+            return "cpu"
+        return "cuda" if torch.cuda.is_available() else "cpu"
+    except Exception:
+        return "cpu"
+
+def to_device(x: Any):
+    """Move a torch tensor/module to the global device (no-op if torch missing)."""
+    try:
+        import torch
+        dev = device_str()
+        if hasattr(x, "to"):
+            return x.to(dev)
+    except Exception:
+        pass
+    return x
+
+def new_tensor(data, *, dtype=None):
+    """Create a tensor on the global device."""
+    import torch
+    return torch.as_tensor(data, dtype=dtype, device=device_str())

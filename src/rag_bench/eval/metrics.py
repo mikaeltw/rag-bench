@@ -33,3 +33,17 @@ def bow_cosine(p, r):
         if not P or not R
         else dp / (math.sqrt(sum(v * v for v in P.values())) * math.sqrt(sum(v * v for v in R.values())))
     )
+
+
+def context_recall(context: str, reference: str) -> float:
+    """
+    Simple token-level recall of reference content in the provided context.
+    Returns the fraction of unique tokens from `reference` that appear in `context`.
+    Range: [0.0, 1.0].
+    """
+    ref_tokens = set(_tok(reference))
+    if not ref_tokens:
+        return 0.0
+    ctx_tokens = set(_tok(context))
+    hits = len(ref_tokens & ctx_tokens)
+    return hits / len(ref_tokens)
