@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional
+
 from .hardware import wants_cpu
+
 
 # Centralized factory for HuggingFaceEmbeddings
 def make_hf_embeddings(
@@ -15,6 +17,7 @@ def make_hf_embeddings(
         embed = make_hf_embeddings()
     """
     from langchain_huggingface import HuggingFaceEmbeddings  # local import
+
     mk = dict(model_kwargs or {})
     # Ensure device is enforced once here
     mk.setdefault("device", "cpu" if wants_cpu() else "cuda")

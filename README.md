@@ -93,3 +93,14 @@ RAG-Bench uses GPU by default when available. Force CPU globally by setting:
 
 ```bash
 RAG_BENCH_DEVICE=cpu python run.py --config ... --question ...
+```
+
+### Offline vs Cloud
+
+Select runtime in the YAML:
+
+```yaml
+runtime:
+  offline: true   # local HuggingFace on CPU
+  device: cpu
+```

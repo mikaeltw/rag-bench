@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -27,6 +27,12 @@ class ProviderModelCfg(BaseModel):
     embeddings: dict | None = None
 
 
+class RuntimeCfg(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    offline: bool = False
+    device: Literal["auto", "cpu", "cuda"] = "auto"
+
+
 class BenchConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     model: ModelCfg
@@ -34,6 +40,7 @@ class BenchConfig(BaseModel):
     data: DataCfg
     provider: ProviderModelCfg | None = None
     vector: dict | None = None
+    runtime: RuntimeCfg = RuntimeCfg()
 
 
 def load_config(path: str) -> BenchConfig:

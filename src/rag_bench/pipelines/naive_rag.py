@@ -1,14 +1,15 @@
 from typing import List, Optional
 
-from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from rag_bench.utils.factories import make_hf_embeddings
+
 
 def build_chain(
     docs: List[Document],
@@ -27,9 +28,10 @@ def build_chain(
     else:
         retr = retriever
     prompt = PromptTemplate.from_template(
-        "Use the context to answer.\nContext:\n{context}\n\nQuestion: {question}\nAnswer:"
+        "Use the context to answer.\n" "Context:\n{context}\n\n" "Question: {question}\n" "Answer (end with ###END):"
     )
     llm = llm or ChatOpenAI(model=model, temperature=0)
+    llm = llm.bind(stop=["###END"])
 
     def ctx_join(d):
         return "\n\n".join(x.page_content for x in d)
