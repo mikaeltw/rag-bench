@@ -24,7 +24,7 @@ def load_dataset(name: str) -> list[Document]:
     """Load a dataset by name like 'docs/wiki' -> examples/datasets/docs/wiki/*.txt|*.md."""
     path = DATASETS_ROOT / name
     if not path.exists():
-        raise FileNotFoundError(f"Dataset '{name}' not found under {DATASETS_ROOT}")
+        raise FileNotFoundError(f"Dataset {name!r} not found under {DATASETS_ROOT}")
     files = [str(p) for p in path.glob("*.txt")] + [str(p) for p in path.glob("*.md")]
     if not files:
         raise FileNotFoundError(f"No .txt or .md files in dataset {name}")

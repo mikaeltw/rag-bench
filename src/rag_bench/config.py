@@ -50,4 +50,4 @@ def load_config(path: str) -> BenchConfig:
     try:
         return BenchConfig.model_validate(obj)
     except ValidationError as e:
-        raise SystemExit(f"Invalid config:\n{e}")
+        raise SystemExit(f"Invalid config:\n{e}") from e

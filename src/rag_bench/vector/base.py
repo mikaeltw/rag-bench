@@ -6,6 +6,7 @@ from langchain_core.retrievers import BaseRetriever
 
 class VectorBackend(Protocol):
     def make_retriever(self, *, docs: Optional[List[Document]], embeddings: Any, k: int) -> BaseRetriever:
+        """Return a retriever backed by the configured vector store."""
         ...
 
 

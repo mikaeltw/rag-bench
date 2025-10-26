@@ -3,11 +3,13 @@ from typing import Any, Mapping, Optional, Protocol
 
 class ChatAdapter(Protocol):
     def to_langchain(self) -> Any:
+        """Return an initialized LangChain chat adapter."""
         ...
 
 
 class EmbeddingsAdapter(Protocol):
     def to_langchain(self) -> Any:
+        """Return an initialized LangChain embeddings adapter."""
         ...
 
 
