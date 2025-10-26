@@ -14,7 +14,7 @@ def write_tmp(text: str):
     return fd.name
 
 
-def test_env_expansion_and_valid():
+def test_env_expansion_and_valid() -> None:
     os.environ["MODEL_NAME"] = "test-model"
     path = write_tmp(
         textwrap.dedent(
@@ -33,7 +33,7 @@ def test_env_expansion_and_valid():
     assert cfg.retriever.k == 5
 
 
-def test_strict_validation_rejects_unknown_keys():
+def test_strict_validation_rejects_unknown_keys() -> None:
     bad = write_tmp(
         textwrap.dedent(
             """

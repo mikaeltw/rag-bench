@@ -5,7 +5,7 @@ from rag_bench.providers.azure.auth import is_installed as az_installed
 from rag_bench.providers.gcp.auth import is_installed as gcp_installed
 
 
-def test_provider_detection_env_driven():
+def test_provider_detection_env_driven() -> None:
     expect_gcp = os.environ.get("EXPECT_GCP_INSTALLED")
     expect_aws = os.environ.get("EXPECT_AWS_INSTALLED")
     expect_az = os.environ.get("EXPECT_AZURE_INSTALLED")

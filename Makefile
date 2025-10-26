@@ -16,10 +16,10 @@ fmt:
 	isort .
 
 lint:
-	flake8
+	flake8 .
 	isort --check-only .
 	black --check .
-	mypy src/rag_bench
+	mypy .
 
 uv-sync:
 	uv venv || true

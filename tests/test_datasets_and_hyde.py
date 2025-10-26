@@ -2,7 +2,7 @@ from rag_bench.eval.datasets import load_dataset
 from rag_bench.pipelines.hyde import build_chain
 
 
-def test_dataset_loading_and_hyde_chain():
+def test_dataset_loading_and_hyde_chain() -> None:
     docs = load_dataset("docs/wiki")
     chain, debug = build_chain(docs, model="dummy", k=2)
     out = chain.invoke("What is LangChain?")

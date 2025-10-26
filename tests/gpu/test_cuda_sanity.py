@@ -4,7 +4,7 @@ pytestmark = pytest.mark.gpu
 
 
 @pytest.mark.gpu
-def test_cuda_tensor_math():
+def test_cuda_tensor_math() -> None:
     try:
         import torch
     except Exception:

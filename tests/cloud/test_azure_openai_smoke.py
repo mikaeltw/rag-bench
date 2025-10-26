@@ -7,7 +7,7 @@ RUN = os.getenv("RUN_AZURE_SMOKE") == "true"
 
 
 @pytest.mark.skipif(not RUN, reason="Azure smoke disabled")
-def test_azure_openai_chat_smoke():
+def test_azure_openai_chat_smoke() -> None:
     if not os.getenv("AZURE_OPENAI_ENDPOINT") or not os.getenv("AZURE_OPENAI_API_KEY"):
         pytest.skip("Missing Azure env")
     from langchain_openai import AzureChatOpenAI

@@ -7,7 +7,7 @@ RUN = os.getenv("RUN_AWS_SMOKE") == "true"
 
 
 @pytest.mark.skipif(not RUN, reason="AWS smoke disabled")
-def test_bedrock_chat_smoke():
+def test_bedrock_chat_smoke() -> None:
     from langchain_aws import ChatBedrock
 
     llm = ChatBedrock(

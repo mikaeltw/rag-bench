@@ -7,7 +7,7 @@ RUN = os.getenv("RUN_GCP_SMOKE") == "true"
 
 
 @pytest.mark.skipif(not RUN, reason="GCP smoke disabled")
-def test_vertex_chat_smoke():
+def test_vertex_chat_smoke() -> None:
     from langchain_google_vertexai import ChatVertexAI
 
     llm = ChatVertexAI(
