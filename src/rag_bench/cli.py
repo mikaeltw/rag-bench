@@ -23,31 +23,30 @@ console = Console()
 def _pick_llm(cfg: BenchConfig) -> RunnableSerializable[Any, Any]:
     """Return a LangChain LLM object based on offline flag."""
     if getattr(cfg.runtime, "offline", False):
-        # Local, CPU-friendly
+        # Local, CPU-friendly text2text model that follows instructions better than GPT-2.
         from langchain_huggingface import HuggingFacePipeline
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
         from transformers import pipeline as hf_pipeline
 
-        # small, CPU-runner model
-        model_id = "distilgpt2"
+        model_id = os.getenv("RAG_BENCH_OFFLINE_MODEL", "google/flan-t5-small")
         tok = AutoTokenizer.from_pretrained(model_id)
-        # make sure we have a pad token for batch/text generation
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_id)
+
         if tok.pad_token_id is None:
-            tok.pad_token = tok.eos_token
+            tok.pad_token_id = tok.eos_token_id
 
         gen = hf_pipeline(
-            task="text-generation",
-            model=AutoModelForCausalLM.from_pretrained(model_id),
+            task="text2text-generation",
+            model=model,
             tokenizer=tok,
-            device=-1,  # CPU
-            return_full_text=False,  # <-- don't echo the prompt
+            device=-1,
+            max_new_tokens=160,
         )
 
-        # deterministic, short answers, and safe for gpt2-family
         generation_config = getattr(gen.model, "generation_config", None)
         if generation_config is not None:
             generation_config.update(
-                max_new_tokens=120,
+                max_new_tokens=160,
                 do_sample=False,
                 repetition_penalty=1.05,
                 pad_token_id=tok.pad_token_id,
@@ -55,8 +54,8 @@ def _pick_llm(cfg: BenchConfig) -> RunnableSerializable[Any, Any]:
             )
 
         llm: RunnableSerializable[Any, Any] = HuggingFacePipeline(pipeline=gen)
-        # Important: stop when the model tries to start a new Q/A block
-        return cast(RunnableSerializable[Any, Any], llm.bind(stop=["\nQuestion:"]))
+        # Encourage clean stops if the template tries to ask follow-up questions.
+        return cast(RunnableSerializable[Any, Any], llm.bind(stop=["\nQuestion:", "###END"]))
     else:
         # Cloud (OpenAI via langchain-openai)
         from rag_bench.providers.base import build_chat_adapter
