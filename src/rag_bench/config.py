@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -33,6 +33,22 @@ class RuntimeCfg(BaseModel):
     device: Literal["auto", "cpu", "cuda"] = "auto"
 
 
+class HydeCfg(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+
+class MultiQueryCfg(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    n_queries: int = Field(3, ge=1, le=10)
+
+
+class RerankCfg(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    method: str = "cosine"
+    top_k: int = Field(4, ge=1, le=50)
+    cross_encoder_model: Optional[str] = "BAAI/bge-reranker-base"
+
+
 class BenchConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     model: ModelCfg
@@ -41,6 +57,9 @@ class BenchConfig(BaseModel):
     provider: ProviderModelCfg | None = None
     vector: Dict[str, Any] | None = None
     runtime: RuntimeCfg = RuntimeCfg()
+    hyde: HydeCfg | None = None
+    multi_query: MultiQueryCfg | None = None
+    rerank: RerankCfg | None = None
 
 
 def load_config(path: str) -> BenchConfig:

@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Optional
 
-import yaml
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableSerializable
 
@@ -26,15 +24,11 @@ class PipelineSelection:
     debug: Callable[[], Mapping[str, Any]]
 
 
-def _load_raw_config(cfg_path: str) -> dict[str, Any]:
-    with open(cfg_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(os.path.expandvars(f.read())) or {}
-
-
 def _build_provider_adapters(cfg: BenchConfig) -> tuple[Optional[RunnableSerializable[Any, Any]], Optional[Any]]:
-    provider_cfg = cfg.model_dump().get("provider")
-    chat_adapter = build_chat_adapter(provider_cfg) if getattr(cfg, "provider", None) else None
-    emb_adapter = build_embeddings_adapter(provider_cfg) if getattr(cfg, "provider", None) else None
+    provider_obj = getattr(cfg, "provider", None)
+    provider_cfg = provider_obj.model_dump() if provider_obj else None
+    chat_adapter = build_chat_adapter(provider_cfg) if provider_cfg else None
+    emb_adapter = build_embeddings_adapter(provider_cfg) if provider_cfg else None
     llm_obj = chat_adapter.to_langchain() if chat_adapter else None
     emb_obj = emb_adapter.to_langchain() if emb_adapter else None
     return llm_obj, emb_obj
@@ -58,37 +52,32 @@ def select_pipeline(
     """
     bench_cfg = cfg or load_config(cfg_path)
     llm_obj, emb_obj = _build_provider_adapters(bench_cfg)
-    raw_cfg = _load_raw_config(cfg_path)
 
-    if "rerank" in raw_cfg:
-        rrc = raw_cfg["rerank"] or {}
-        rerank_top_k = int(rrc.get("top_k", 4))
-        method = str(rrc.get("method", "cosine"))
-        cross_encoder_model = str(rrc.get("cross_encoder_model", "BAAI/bge-reranker-base"))
+    if bench_cfg.rerank is not None:
+        rrc = bench_cfg.rerank
         chain, debug = rr.build_chain(
             docs,
             model=bench_cfg.model.name,
             k=bench_cfg.retriever.k,
-            rerank_top_k=rerank_top_k,
-            method=method,
-            cross_encoder_model=cross_encoder_model,
+            rerank_top_k=rrc.top_k,
+            method=rrc.method,
+            cross_encoder_model=rrc.cross_encoder_model or "BAAI/bge-reranker-base",
             llm=llm_obj,
             embeddings=emb_obj,
         )
         pipeline_id = "rerank"
-    elif "multi_query" in raw_cfg:
-        mq_cfg = raw_cfg["multi_query"] or {}
-        n_queries = int(mq_cfg.get("n_queries", 3))
+    elif bench_cfg.multi_query is not None:
+        mq_cfg = bench_cfg.multi_query
         chain, debug = mq.build_chain(
             docs,
             model=bench_cfg.model.name,
             k=bench_cfg.retriever.k,
-            n_queries=n_queries,
+            n_queries=mq_cfg.n_queries,
             llm=llm_obj,
             embeddings=emb_obj,
         )
         pipeline_id = "multi_query"
-    elif "hyde" in raw_cfg:
+    elif bench_cfg.hyde is not None:
         chain, debug = hy.build_chain(
             docs,
             model=bench_cfg.model.name,

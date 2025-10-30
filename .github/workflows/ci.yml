@@ -17,8 +17,8 @@ jobs:
           flake8
           isort --check-only .
           black --check .
-      - name: Unit/Offline tests
-        run: pytest -q -m "unit or offline"
+      - name: Unit/Offline tests with coverage
+        run: pytest -q --cov=src/rag_bench --cov-report=term-missing -m "unit or offline"
 
 
 cloud-gcp:
