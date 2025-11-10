@@ -1,18 +1,18 @@
 from typing import Any, Dict, List, Optional, cast
 
 import numpy as np
-from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough, RunnableSerializable
-from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from numpy.typing import ArrayLike
 
 from rag_bench.pipelines.base import BuildResult
+from rag_bench.pipelines.utils import resolve_chat_llm
 from rag_bench.utils.factories import make_hf_embeddings
+from rag_bench.vector.local import build_local_vectorstore
 
 
 def _cosine(u: ArrayLike, v: ArrayLike) -> float:
@@ -36,7 +36,7 @@ def build_chain(
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=120)
     splits = splitter.split_documents(docs)
     embed = embeddings or make_hf_embeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vect = FAISS.from_documents(splits, embed)
+    vect = build_local_vectorstore(splits, embed)
 
     class _ContextBuilder:
         def __init__(self) -> None:
@@ -78,7 +78,7 @@ def build_chain(
         "Context:\n{context}\n\nQuestion: {question}\nAnswer:"
     )
     prompt = PromptTemplate.from_template(template)
-    llm_answer = llm or ChatOpenAI(model=model, temperature=0)
+    llm_answer = resolve_chat_llm(model, override=llm)
 
     chain = cast(
         RunnableSerializable[str, str],

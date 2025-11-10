@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import pytest
 from langchain_core.documents import Document
@@ -45,7 +45,8 @@ def test_select_pipeline_defaults_to_naive(monkeypatch: pytest.MonkeyPatch) -> N
     assert isinstance(selection, PipelineSelection)
     assert selection.config is bench_cfg
     assert selection.pipeline_id == "naive"
-    assert selection.chain is chain
+    selected_chain = cast(DummyChain, selection.chain)
+    assert selected_chain is chain
     assert selection.debug() == {"pipeline": "naive"}
     assert store["kwargs"]["model"] == bench_cfg.model.name
 
@@ -53,7 +54,7 @@ def test_select_pipeline_defaults_to_naive(monkeypatch: pytest.MonkeyPatch) -> N
 @pytest.mark.unit
 def test_select_pipeline_multi_query_branch(monkeypatch: pytest.MonkeyPatch) -> None:
     store: Dict[str, Any] = {}
-    chain = make_stub_builder("multi_query", store)
+    _ = make_stub_builder("multi_query", store)
     monkeypatch.setattr(multi_query, "build_chain", store["builder"])
 
     def fail(*_args: Any, **_kwargs: Any) -> None:
@@ -74,7 +75,7 @@ def test_select_pipeline_multi_query_branch(monkeypatch: pytest.MonkeyPatch) -> 
 @pytest.mark.unit
 def test_select_pipeline_hyde_branch(monkeypatch: pytest.MonkeyPatch) -> None:
     store: Dict[str, Any] = {}
-    chain = make_stub_builder("hyde", store)
+    _ = make_stub_builder("hyde", store)
     monkeypatch.setattr(hyde, "build_chain", store["builder"])
 
     def fail(*_args: Any, **_kwargs: Any) -> None:
@@ -94,7 +95,7 @@ def test_select_pipeline_hyde_branch(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.unit
 def test_select_pipeline_rerank_branch(monkeypatch: pytest.MonkeyPatch) -> None:
     store: Dict[str, Any] = {}
-    chain = make_stub_builder("rerank", store)
+    _ = make_stub_builder("rerank", store)
     monkeypatch.setattr(rerank, "build_chain", store["builder"])
 
     def fail(*_args: Any, **_kwargs: Any) -> None:
@@ -128,8 +129,9 @@ def test_select_pipeline_builds_provider_adapters(monkeypatch: pytest.MonkeyPatc
             self._calls = calls
 
         def to_langchain(self) -> str:
-            self._calls["returned"] = f"{self._tag}-adapter"
-            return self._calls["returned"]
+            result = f"{self._tag}-adapter"
+            self._calls["returned"] = result
+            return result
 
     def fake_chat(cfg: Dict[str, Any] | None) -> DummyAdapter:
         chat_calls["cfg"] = cfg
@@ -149,5 +151,6 @@ def test_select_pipeline_builds_provider_adapters(monkeypatch: pytest.MonkeyPatc
     assert emb_calls["cfg"]["name"] == "aws"
     assert store["kwargs"]["llm"] == "chat-adapter"
     assert store["kwargs"]["embeddings"] == "emb-adapter"
-    assert selection.chain is chain
+    selected_chain = cast(DummyChain, selection.chain)
+    assert selected_chain is chain
     assert selection.debug() == {"pipeline": "naive"}

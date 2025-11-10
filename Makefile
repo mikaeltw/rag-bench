@@ -9,7 +9,7 @@ run:
 	python run.py --config configs/wiki.yaml --question "What is LangChain?"
 
 test:
-	pytest -q
+	pytest .
 
 fmt:
 	black .

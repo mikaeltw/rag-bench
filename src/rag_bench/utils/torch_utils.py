@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING, Any
 
 from .hardware import wants_cpu
@@ -8,13 +9,23 @@ if TYPE_CHECKING:
     import torch
 
 
-def device_str() -> str:
+def cuda_available() -> bool:
+    """Return True when torch sees a usable CUDA device without surfacing warnings."""
     try:
         import torch
 
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=UserWarning)
+            return bool(torch.cuda.is_available())
+    except Exception:
+        return False
+
+
+def device_str() -> str:
+    try:
         if wants_cpu():
             return "cpu"
-        return "cuda" if torch.cuda.is_available() else "cpu"
+        return "cuda" if cuda_available() else "cpu"
     except Exception:
         return "cpu"
 

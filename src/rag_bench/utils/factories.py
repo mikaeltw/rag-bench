@@ -1,12 +1,19 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from .hardware import wants_cpu
+from .torch_utils import cuda_available
 
 if TYPE_CHECKING:
     from langchain_huggingface import HuggingFaceEmbeddings
 
 
 # Centralized factory for HuggingFaceEmbeddings
+def _preferred_device() -> str:
+    if wants_cpu():
+        return "cpu"
+    return "cuda" if cuda_available() else "cpu"
+
+
 def make_hf_embeddings(
     model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
     *,
@@ -23,7 +30,7 @@ def make_hf_embeddings(
 
     mk = dict(model_kwargs or {})
     # Ensure device is enforced once here
-    mk.setdefault("device", "cpu" if wants_cpu() else "cuda")
+    mk.setdefault("device", _preferred_device())
     return HuggingFaceEmbeddings(
         model_name=model_name,
         model_kwargs=mk,

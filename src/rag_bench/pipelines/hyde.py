@@ -1,7 +1,5 @@
-import os
 from typing import Any, Callable, Dict, List, Optional, cast
 
-from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.output_parsers import StrOutputParser
@@ -11,7 +9,9 @@ from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from rag_bench.pipelines.base import BuildResult
+from rag_bench.pipelines.utils import has_openai_key, resolve_chat_llm
 from rag_bench.utils.factories import make_hf_embeddings
+from rag_bench.vector.local import build_local_vectorstore
 
 HYP_PROMPT = """You will draft a hypothetical answer to help retrieve relevant passages.
 Question: {question}
@@ -32,9 +32,9 @@ def build_chain(
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=120)
     splits = splitter.split_documents(docs)
     embed = embeddings or make_hf_embeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vect = FAISS.from_documents(splits, embed)
+    vect = build_local_vectorstore(splits, embed)
 
-    openai_ok = bool(os.environ.get("OPENAI_API_KEY"))
+    openai_ok = has_openai_key()
     if openai_ok and llm is None:
         llm_h = ChatOpenAI(model=model, temperature=0)
         hyp_tmpl = PromptTemplate.from_template(HYP_PROMPT)
@@ -47,7 +47,7 @@ def build_chain(
         def gen_hyp(q: str) -> str:
             return _fallback_hypothesis(q)
 
-    llm_answer = llm or ChatOpenAI(model=model, temperature=0)
+    llm_answer = resolve_chat_llm(model, override=llm)
 
     class _ContextBuilder:
         def __init__(self, generator: Callable[[str], str]) -> None:
