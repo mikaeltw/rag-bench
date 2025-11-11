@@ -1,21 +1,28 @@
 from __future__ import annotations
 
-import importlib
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Type, cast
-
-if TYPE_CHECKING:
-    from langchain_google_vertexai.vectorstores import VectorSearchVectorStore
+from typing import Any, List, Mapping, Optional, Protocol, Type, cast
 
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStoreRetriever
 
 
-def _require() -> Type["VectorSearchVectorStore"]:
+class _VectorSearchVectorStoreProto(Protocol):
+    @classmethod
+    def from_components(cls, *args: Any, **kwargs: Any) -> "_VectorSearchVectorStoreProto":
+        """Construct vectorstore from components."""
+        ...
+
+    def as_retriever(self, *args: Any, **kwargs: Any) -> VectorStoreRetriever:
+        """Vector retriever method."""
+        ...
+
+
+def _require() -> Type[_VectorSearchVectorStoreProto]:
     try:
-        module = importlib.import_module("langchain_google_vertexai.vectorstores")
-        vector_store_cls = getattr(module, "VectorSearchVectorStore")
-        return cast(Type["VectorSearchVectorStore"], vector_store_cls)
+        from langchain_google_vertexai.vectorstores import VectorSearchVectorStore
+
+        return cast(Type[_VectorSearchVectorStoreProto], VectorSearchVectorStore)
     except Exception as e:
         raise RuntimeError("Matching Engine requires langchain-google-vertexai (install rag-bench[gcp])") from e
 
