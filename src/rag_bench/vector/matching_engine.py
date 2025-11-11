@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Type
+import importlib
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Type, cast
 
 if TYPE_CHECKING:
     from langchain_google_vertexai.vectorstores import VectorSearchVectorStore
@@ -12,9 +13,9 @@ from langchain_core.vectorstores import VectorStoreRetriever
 
 def _require() -> Type["VectorSearchVectorStore"]:
     try:
-        from langchain_google_vertexai.vectorstores import VectorSearchVectorStore
-
-        return VectorSearchVectorStore
+        module = importlib.import_module("langchain_google_vertexai.vectorstores")
+        vector_store_cls = getattr(module, "VectorSearchVectorStore")
+        return cast(Type["VectorSearchVectorStore"], vector_store_cls)
     except Exception as e:
         raise RuntimeError("Matching Engine requires langchain-google-vertexai (install rag-bench[gcp])") from e
 
