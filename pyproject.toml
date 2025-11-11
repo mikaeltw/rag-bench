@@ -88,6 +88,7 @@ addopts = [
   "--cov=rag_bench",
   "--cov-branch",
   "--no-cov-on-fail",
+  "--cov-report=",
   "-ra",
   "-Wall",
   "-Werror",
@@ -102,13 +103,13 @@ omit = [
   "*/.venv/*",
   "*/venv/*",
   "*/src/rag_bench/providers/*",
-  "*/.venv/*",
+  "*/src/rag_bench/vector/*",
 ]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-#fail_under = 100.0            # <-- enforce 100% here
+fail_under = 100.0            # <-- enforce 100% here
 
 # Normalize paths from different runners (Linux/macOS, tox, Actions)
 [tool.coverage.paths]
@@ -171,5 +172,5 @@ commands = [["mypy", "."]]
 [tool.tox.env.gpu]
 package = "skip"
 deps = [".[dev]"]
-set_env = { RAG_BENCH_DEVICE = "gpu"}
+set_env = { RAG_BENCH_DEVICE = "gpu", PYTHONWARNINGS = "ignore::UserWarning:argparse,ignore:Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.:UserWarning" }
 commands = [["pytest", "-m", "gpu"]]
