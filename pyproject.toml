@@ -100,8 +100,8 @@ source = ["src/rag_bench"]
 branch = true
 parallel = true
 omit = [
-  "*/src/rag_bench/providers/*",
-  "*/src/rag_bench/vector/*",
+  "*/providers/*",
+  "*/vector/*",
 ]
 
 [tool.coverage.report]
