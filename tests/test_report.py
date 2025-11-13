@@ -26,6 +26,11 @@ def test_render_extras_renders_all_sections() -> None:
     assert "<h3>Usage</h3>" in html
 
 
+def test_render_extras_without_retrieved() -> None:
+    html = report._render_extras({"pipeline": "naive"})
+    assert "Retrieved snippets" not in html
+
+
 @pytest.mark.offline
 def test_write_simple_report_creates_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.chdir(tmp_path)

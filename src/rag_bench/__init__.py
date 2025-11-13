@@ -18,10 +18,7 @@ __all__ = ["__version__"]
 
 try:
     from .config import load_config as load_config  # noqa: F401
-
-    if "load_config" not in __all__:
-        __all__.append("load_config")
 except Exception:
     globals().pop("load_config", None)
-    if "load_config" in __all__:
-        __all__.remove("load_config")
+else:
+    __all__ = ["__version__", "load_config"]

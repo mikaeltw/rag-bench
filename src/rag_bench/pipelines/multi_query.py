@@ -32,6 +32,16 @@ def _fallback_queries(question: str, n: int) -> List[str]:
     return variants[: max(1, n)]
 
 
+def _dedupe_queries(base: str, generated: List[str], limit: int) -> List[str]:
+    uniq: List[str] = []
+    for candidate in [base] + generated:
+        if candidate not in uniq:
+            uniq.append(candidate)
+        if len(uniq) >= max(1, limit):
+            break
+    return uniq
+
+
 def build_chain(
     docs: List[Document],
     model: str = "gpt-4o-mini",
@@ -54,13 +64,7 @@ def build_chain(
         def gen_queries(q: str) -> List[str]:
             text = (gen_tmpl | llm_gen | StrOutputParser()).invoke({"n": n_queries, "question": q})
             lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-            uniq = []
-            for s in [q] + lines:
-                if s not in uniq:
-                    uniq.append(s)
-                if len(uniq) >= max(1, n_queries):
-                    break
-            return uniq
+            return _dedupe_queries(q, lines, n_queries)
 
     else:
 

@@ -91,3 +91,25 @@ def test_bench_cli_main_produces_report(monkeypatch: pytest.MonkeyPatch, tmp_pat
     assert docs_called == [cfg.data.paths]
     assert reports, "report should be recorded"
     assert reports[0]["extras"] == {"pipeline": "naive"}
+
+
+def test_bench_cli_uses_candidates_when_no_retrieved(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    qa_path = tmp_path / "qa.jsonl"
+    qa_path.write_text('{"question":"Q1","reference_answer":"Ref"}\n', encoding="utf-8")
+    cfg = _dummy_config()
+    chain = DummyChain()
+    selection = SimpleNamespace(
+        pipeline_id="naive",
+        chain=chain,
+        debug=lambda: {"pipeline": "naive", "candidates": [{"preview": "cand:Q1", "source": "doc"}]},
+        config=cfg,
+    )
+    monkeypatch.setattr(bench_cli, "load_config", lambda path: cfg)
+    monkeypatch.setattr(bench_cli, "load_texts_as_documents", lambda _: ["doc"])
+    monkeypatch.setattr(bench_cli, "select_pipeline", lambda *_args, **_kwargs: selection)
+    monkeypatch.setattr(bench_cli, "write_simple_report", lambda **_: "reports/report.html")
+    monkeypatch.setattr(sys, "argv", ["bench_cli", "--config", "cfg.yaml", "--qa", str(qa_path)])
+
+    bench_cli.main()
+
+    assert chain.calls == ["Q1"]
