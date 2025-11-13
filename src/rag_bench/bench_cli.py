@@ -68,5 +68,5 @@ def main() -> None:
     console.print(f"[green]Benchmark report written to {report_path}[/green]")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - script entrypoint
     main()

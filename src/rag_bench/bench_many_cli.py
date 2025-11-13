@@ -93,5 +93,5 @@ def main() -> None:
     console.print(f"[green]Wrote {out}[/green]")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - script entrypoint
     main()

@@ -11,7 +11,7 @@ from rich.console import Console
 from rag_bench.config import BenchConfig, load_config
 from rag_bench.eval.dataset_loader import load_texts_as_documents
 from rag_bench.pipelines import naive_rag
-from rag_bench.providers.base import build_embeddings_adapter
+from rag_bench.providers.base import build_chat_adapter, build_embeddings_adapter
 from rag_bench.utils.cache import cache_get, cache_set
 from rag_bench.utils.callbacks.usage import UsageTracker
 from rag_bench.utils.repro import set_seeds
@@ -58,8 +58,6 @@ def _pick_llm(cfg: BenchConfig) -> RunnableSerializable[Any, Any]:
         return cast(RunnableSerializable[Any, Any], llm.bind(stop=["\nQuestion:", "###END"]))
     else:
         # Cloud (OpenAI via langchain-openai)
-        from rag_bench.providers.base import build_chat_adapter
-
         prov = getattr(cfg, "provider", None)
         if prov:
             chat = build_chat_adapter(cfg.model_dump().get("provider"))
@@ -127,5 +125,5 @@ def main() -> None:
     console.print(ans)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - exercised via CLI entrypoint
     main()

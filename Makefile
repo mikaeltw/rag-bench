@@ -28,7 +28,6 @@ help:
 	@echo "  make test-gpu       GPU-marked tests via tox"
 	@echo "  make build          Build sdist + wheel"
 	@echo "  make coverage       Run tests and produce combined coverage report"
-	@echo "  make coveralls-upload-local  Upload coverage.xml from local machine to Coveralls"
 	@echo "  make clean          Remove caches/build artefacts"
 	@echo "  make distclean      Also remove venvs and tox envs"
 
@@ -74,7 +73,6 @@ coverage-erase:
 	$(UV) run coverage erase
 
 coverage:
-	# Run your local default slice with coverage; add more slices if you like.
 	$(UV) run coverage erase
 	$(TOX_CMD) -e py312
 	$(TOX_CMD) -e gpu
@@ -82,9 +80,10 @@ coverage:
 	$(UV) run coverage report
 	@echo "Use 'make coverage-xml' for XML (Coveralls)"
 
-coverage-xml:
+coverage-xml-html:
 	$(UV) run coverage xml
-	@echo "Wrote coverage.xml"
+	$(UV) run coverage html
+	@echo "Wrote coverage.xml and coverage.html"
 
 clean:
 	@rm -rf .pytest_cache .mypy_cache dist build coverage.xml

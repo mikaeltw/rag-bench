@@ -1,4 +1,8 @@
+import pytest
+
 from rag_bench.eval.metrics import bow_cosine, context_recall, lexical_f1
+
+pytestmark = pytest.mark.unit
 
 
 def test_metrics_sanity() -> None:
@@ -12,3 +16,11 @@ def test_metrics_sanity() -> None:
     ctx = "This text mentions LangChain and language model apps."
     rec = context_recall(b, ctx)
     assert 0.0 <= rec <= 1.0
+
+
+def test_metrics_handle_empty_inputs() -> None:
+    assert lexical_f1("", "reference answer") == 0.0
+    assert lexical_f1("prediction", "") == 0.0
+    assert bow_cosine("", "reference answer") == 0.0
+    assert bow_cosine("prediction", "") == 0.0
+    assert context_recall("", "") == 0.0
