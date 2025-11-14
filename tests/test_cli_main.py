@@ -140,6 +140,29 @@ def test_cli_main_returns_cached_answer(monkeypatch: pytest.MonkeyPatch) -> None
     assert writes == []
 
 
+def test_cli_main_skips_embeddings_when_adapter_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = _make_cfg()
+    cfg.provider = SimpleNamespace(name="aws")
+    cfg.model_dump = lambda: {"model": {"name": cfg.model.name}, "provider": {"name": "aws"}}
+    docs = [Document(page_content="doc", metadata={"source": "doc.txt"})]
+    chain = DummyChain()
+    cache_log = _patch_common(monkeypatch, cfg, docs, chain)
+    # Override the embeddings adapter builder to ensure it's invoked but returns None.
+    calls: list[dict[str, Any]] = []
+
+    def build_adapter(cfg_data: Dict[str, Any]) -> None:
+        calls.append(cfg_data)
+        return None
+
+    monkeypatch.setattr(cli, "build_embeddings_adapter", build_adapter)
+    monkeypatch.setattr(sys, "argv", ["rag-bench", "--config", "cfg.yaml", "--question", "No embeddings?"])
+
+    cli.main()
+
+    assert calls and calls[0]["name"] == "aws"
+    assert cache_log.gets == [("demo-model", "No embeddings?")]
+
+
 def test_pick_llm_offline_builds_hf_pipeline(monkeypatch: pytest.MonkeyPatch) -> None:
     cfg = _make_cfg()
     cfg.runtime.offline = True

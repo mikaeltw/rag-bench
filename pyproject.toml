@@ -99,10 +99,7 @@ addopts = [
 source = ["src/rag_bench"]
 branch = true
 parallel = true
-omit = [
-  "*/providers/*",
-  "*/vector/*",
-]
+omit = []
 
 [tool.coverage.report]
 show_missing = true
