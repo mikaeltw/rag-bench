@@ -8,12 +8,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      - name: Install uv & tox
+        run: make setup
 
-      - name: Install uv
-        run: pip install uv
+      - name: Sync rag-bench deps
+        run: make sync
 
       - name: Cache uv
         uses: actions/cache@v4
@@ -34,9 +33,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-hf-
 
-      - name: Lint & typecheck
-        env:
-          RAG_BENCH_DEVICE: cpu
-          CUDA_VISIBLE_DEVICES: ""
+      - name: Lint
         run: |
-          uvx --from tox-uv tox -e lint,typecheck
+          make lint
+
+      - name: Typecheck
+        run: |
+          make typecheck

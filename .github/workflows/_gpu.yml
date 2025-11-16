@@ -22,12 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.py }}
+      - name: Install uv & tox
+        run: make setup
 
-      - name: Install uv
-        run: pip install uv
+      - name: Sync rag-bench deps
+        run: make sync
 
       - name: Cache uv
         uses: actions/cache@v4
@@ -48,15 +47,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-hf-
 
-      - name: Run GPU-tests
+      - name: Cache .tox
+        uses: actions/cache@v4
+        with:
+          path: .tox
+          key: ${{ runner.os }}-tox-${{ matrix.py }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-tox-${{ matrix.py }}-
+            ${{ runner.os }}-tox-
+
+      - name: Run tests via tox (uv backend)
         run: |
-          PY="${{ matrix.py }}"
-          uvx --from tox-uv tox -e "py${PY//./}"
+          make test-all-gpu
+
+      - name: Compute python version without dot
+        id: pythonversion
+        run: |
+          v='${{ matrix.py }}'
+          echo "short=${v/./}" >> "$GITHUB_OUTPUT"
 
       - name: Save coverage data
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cov-${{ inputs.coverage_suffix }}-${{ matrix.py }}
-          path: .coverage.${{ inputs.coverage_suffix }}-${{ matrix.py }}
+          name: cov-${{ inputs.coverage_suffix }}-${{ steps.pythonversion.outputs.short }}
+          path: .coverage.${{ inputs.coverage_suffix }}${{ steps.pythonversion.outputs.short }}
           if-no-files-found: error

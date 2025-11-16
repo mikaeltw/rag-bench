@@ -5,20 +5,26 @@ on:
   pull_request:
 
 jobs:
+  LintTypecheck:
+    uses: ./.github/workflows/_lint-typecheck-check.yml
+    with:
+      marker: "lint-typecheck"
+      suffix: "lint-typecheck"
+
   UnitOffline:
     uses: ./.github/workflows/_unit_offline.yml
     with:
       marker: "unit-offline"
-      suffix: "unit-offline"
+      suffix: "py"
 
   GPU:
     uses: ./.github/workflows/_gpu.yml
     with:
       marker: "gpu"
-      suffix: "gpu"
+      suffix: "gpupy"
 
   Coverage:
     needs: [UnitOffline, GPU]
     uses: ./.github/workflows/_coveralls.yml
     with:
-      expect: "unit-offline,intgpueg"
+      expect: "unit-offline,gpu"
