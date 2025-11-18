@@ -10,3 +10,6 @@ build/
 coverage.xml
 dist
 .coverage*
+.uv-tools
+.uv-cache
+.pytest_cache
