@@ -10,7 +10,7 @@ fi
 # Default to a regional Artifact Registry repo close to the GPU VMs.
 if [[ -z "${IMAGE_REPO:-}" ]]; then
   : "${GCP_PROJECT:?Set GCP_PROJECT to your GCP project id or override IMAGE_REPO}"
-  GCP_ARTIFACT_REGION="${GCP_ARTIFACT_REGION:-us}"
+  GCP_ARTIFACT_REGION="${GCP_ARTIFACT_REGION:-us-central1}"
   IMAGE_REPO="${GCP_ARTIFACT_REGION}-docker.pkg.dev/${GCP_PROJECT}/rag-bench/rag-bench-gpu-tests"
 fi
 

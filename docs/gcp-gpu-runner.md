@@ -49,20 +49,29 @@ gpu-runner:
   labels: [self-hosted, linux, x64, gpu]
   provider:
     name: gcp
-    project: my-project
+    project: gpu-test-runners
     region: us-central1
     zone: us-central1-b
   machine:
-    type: n1-standard-8
+    type: n1-standard-4
     gpu:
       type: nvidia-tesla-t4
       count: 1
     image:
       family: rag-bench-gpu-host
-      project: my-project
+      project: gpu-test-runners
+    serviceAccount: runner-sa@gpu-test-runners.iam.gserviceaccount.com
+    serviceAccountScopes: [cloud-platform]
   setup:
-    # Pre-pull the GPU test container (optional but speeds up the job)
-    - docker pull us-central1-docker.pkg.dev/my-project/rag-bench/rag-bench-gpu-tests:latest
+    - name: Authenticate Docker to Artifact Registry and pre-pull image
+      run: |
+        set -euo pipefail
+        HOST="${GCP_ARTIFACT_REGION:-us-central1}-docker.pkg.dev"
+        PROJECT="${GCP_PROJECT:-gpu-test-runners}"
+        IMAGE_REF="${HOST}/${PROJECT}/rag-bench/rag-bench-gpu-tests:latest"
+        TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | awk -F'"' '/access_token/ {print $4}')
+        echo "${TOKEN}" | docker login -u oauth2accesstoken --password-stdin "https://${HOST}"
+        docker pull "${IMAGE_REF}"
 ```
 
 Cirun will now boot runners from your preconfigured image, so the VM already has Docker plus the correct NVIDIA runtime when the GitHub Actions job starts. Adjust the resource labels to match `.github/workflows/_gpu.yml` (`[self-hosted, linux, x64, gpu]`).

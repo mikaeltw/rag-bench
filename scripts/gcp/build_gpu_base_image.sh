@@ -24,6 +24,14 @@ SUBNET="${SUBNET:-default}"
 REGION="${REGION:-${GCP_ZONE%-*}}"
 INSTALL_SCRIPT="${INSTALL_SCRIPT:-scripts/gcp/install_gpu_host.sh}"
 PREEMPTIBLE="${PREEMPTIBLE:-true}"
+PROVISIONING_MODEL="${PROVISIONING_MODEL:-STANDARD}"
+MAINTENANCE_POLICY="TERMINATE"
+
+if [[ "${PREEMPTIBLE}" == "true" || "${PREEMPTIBLE}" == "1" ]]; then
+  PROVISIONING_MODEL="SPOT"
+  # Maintenance policy/automatic restart not supported for spot VMs.
+  MAINTENANCE_POLICY=""
+fi
 
 echo "Using:"
 echo "  Project:        ${GCP_PROJECT}"
@@ -34,6 +42,28 @@ echo "  Machine type:   ${MACHINE_TYPE}"
 echo "  GPU:            ${GPU_TYPE} x${GPU_COUNT}"
 echo "  Boot disk (GB): ${BOOT_DISK_SIZE}"
 echo "  Preemptible:    ${PREEMPTIBLE}"
+echo "  Provisioning:   ${PROVISIONING_MODEL}"
+
+wait_for_ssh() {
+  local tries=30
+  local sleep_seconds=10
+  for ((i=1; i<=tries; i++)); do
+    if gcloud compute ssh "${INSTANCE_NAME}" \
+      --zone "${GCP_ZONE}" \
+      --command "echo ready" \
+      --quiet \
+      -- \
+      -o ConnectTimeout=5 \
+      -o StrictHostKeyChecking=no \
+      -o BatchMode=yes >/dev/null 2>&1; then
+      return 0
+    fi
+    echo "Waiting for SSH to become ready (${i}/${tries})..."
+    sleep "${sleep_seconds}"
+  done
+  echo "SSH not reachable for ${INSTANCE_NAME} after $((tries * sleep_seconds))s." >&2
+  return 1
+}
 
 gcloud config set project "${GCP_PROJECT}" >/dev/null
 
@@ -41,8 +71,8 @@ gcloud compute instances create "${INSTANCE_NAME}" \
   --zone "${GCP_ZONE}" \
   --machine-type "${MACHINE_TYPE}" \
   --accelerator "type=${GPU_TYPE},count=${GPU_COUNT}" \
-  --maintenance-policy TERMINATE \
-  --provisioning-model STANDARD \
+  $(if [[ -n "${MAINTENANCE_POLICY}" ]]; then echo "--maintenance-policy ${MAINTENANCE_POLICY}"; fi) \
+  --provisioning-model "${PROVISIONING_MODEL}" \
   --boot-disk-type=pd-ssd \
   --boot-disk-size "${BOOT_DISK_SIZE}"GB \
   --image-family "${SOURCE_IMAGE_FAMILY}" \
@@ -51,7 +81,9 @@ gcloud compute instances create "${INSTANCE_NAME}" \
   --network "${NETWORK}" \
   --subnet "${SUBNET}" \
   --tags rag-bench-gpu-builder \
-  $(if [[ "${PREEMPTIBLE}" == "true" || "${PREEMPTIBLE}" == "1" ]]; then echo "--preemptible"; fi)
+  $(if [[ "${PROVISIONING_MODEL}" == "SPOT" ]]; then echo "--instance-termination-action=DELETE"; fi)
+
+wait_for_ssh
 
 gcloud compute scp \
   --zone "${GCP_ZONE}" \
