@@ -11,8 +11,10 @@ if [[ -z "${IMAGE_REF:-}" ]]; then
   fi
 fi
 
+DOCKER_ENTRYPOINT=()
 if [[ $# -eq 0 ]]; then
-  COMMAND=(/usr/local/bin/run-gpu-tests.sh)
+  DOCKER_ENTRYPOINT=(--entrypoint /bin/bash)
+  COMMAND=(-lc "make setup && make sync && make test-all-gpu")
 else
   COMMAND=("$@")
 fi
@@ -35,5 +37,6 @@ docker run --rm --gpus all \
   -v "${TORCH_CACHE}":/root/.cache/torch \
   -v "${UV_CACHE}":/root/.cache/uv \
   -e RAG_BENCH_DEVICE=gpu \
+  "${DOCKER_ENTRYPOINT[@]}" \
   "${IMAGE_REF}" \
   "${COMMAND[@]}"

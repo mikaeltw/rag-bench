@@ -58,8 +58,4 @@ RUN apt-get update && \
 COPY --from=deps /root/.local /root/.local
 COPY --from=deps /opt/rag-bench/.venv /opt/rag-bench/.venv
 
-RUN printf '#!/usr/bin/env bash\nset -euo pipefail\nmake setup && make sync && make test-all-gpu\n' \
-    > /usr/local/bin/run-gpu-tests.sh && \
-    chmod +x /usr/local/bin/run-gpu-tests.sh
-
 ENTRYPOINT ["/bin/bash"]
