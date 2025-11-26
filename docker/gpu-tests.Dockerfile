@@ -38,6 +38,11 @@ RUN make setup && make sync && \
 
 FROM ${CUDA_IMAGE_RUNTIME} AS runtime
 
+ENV UV_CACHE_DIR=/opt/uv-cache \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/opt/rag-bench/.venv \
+    PATH="/root/.local/bin:${PATH}"
+
 # Minimal runtime packages to run the tests/venv
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
