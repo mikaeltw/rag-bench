@@ -18,13 +18,15 @@ GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M)"
 IMAGE_TAG="${IMAGE_TAG:-${GIT_SHA}}"
 IMAGE_REF="${IMAGE_REPO}:${IMAGE_TAG}"
 PUSH="${PUSH:-0}"
-CUDA_IMAGE="${CUDA_IMAGE:-nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04}"
+CUDA_IMAGE_DEVEL="${CUDA_IMAGE_DEVEL:-nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04}"
+CUDA_IMAGE_RUNTIME="${CUDA_IMAGE_RUNTIME:-nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04}"
 
-echo "Building GPU test image ${IMAGE_REF} (base=${CUDA_IMAGE})"
+echo "Building GPU test image ${IMAGE_REF} (devel=${CUDA_IMAGE_DEVEL}, runtime=${CUDA_IMAGE_RUNTIME})"
 
 docker build \
   -f docker/gpu-tests.Dockerfile \
-  --build-arg "CUDA_IMAGE=${CUDA_IMAGE}" \
+  --build-arg "CUDA_IMAGE_DEVEL=${CUDA_IMAGE_DEVEL}" \
+  --build-arg "CUDA_IMAGE_RUNTIME=${CUDA_IMAGE_RUNTIME}" \
   -t "${IMAGE_REF}" \
   .
 

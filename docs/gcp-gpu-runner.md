@@ -84,7 +84,7 @@ Cirun will now boot runners from your preconfigured image, so the VM already has
    GCP_PROJECT="my-project" GCP_ARTIFACT_REGION="us-central1" ./scripts/docker/build_gpu_test_image.sh
    ```
 
-   By default it uses the `nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04` base image (configurable via `CUDA_IMAGE=...`). The Dockerfile at `docker/gpu-tests.Dockerfile` installs uv, copies the repo and embeds `/usr/local/bin/run-gpu-tests.sh`, which executes the same `make setup && make sync && make test-all-gpu` sequence used in `_gpu.yml`. Dependencies download during `make sync` inside the container and land in the mounted cache directories, so subsequent workflow runs reuse them.
+   By default it builds with a split CUDA base to keep the final image smaller: `nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04` for the build stage and `nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04` for the runtime stage. Override via `CUDA_IMAGE_DEVEL=...` and `CUDA_IMAGE_RUNTIME=...`. The Dockerfile at `docker/gpu-tests.Dockerfile` installs uv, copies the repo and embeds `/usr/local/bin/run-gpu-tests.sh`, which executes the same `make setup && make sync && make test-all-gpu` sequence used in `_gpu.yml`. Dependencies download during `make sync` inside the container and land in the mounted cache directories, so subsequent workflow runs reuse them.
 
 2. Push to GCP Artifact Registry:
 
@@ -94,6 +94,7 @@ Cirun will now boot runners from your preconfigured image, so the VM already has
    ```
 
    Use the Artifact Registry region that matches your runner zone’s region (for example: zone `us-central1-b` ⇒ host `us-central1-docker.pkg.dev`). Keeping the registry and VM in the same region minimizes egress time/cost.
+   For faster pulls/extraction, attach an NVMe local SSD to the runner VM and let the host image place Docker’s data-root on it automatically (see below).
 
 ## Running the workflow inside the container
 
@@ -116,4 +117,4 @@ Override the command to run ad-hoc checks (for example, `./scripts/docker/run_gp
 - **Host VM image** – lives as a Compute Engine image (and optional Cloud Storage export) inside your GCP project. Cirun references it via the image family.
 - **GPU test container** – stored in GCP Artifact Registry in the same region as your GPU runners for low-latency pulls. Use `IMAGE_REPO`/`GCP_ARTIFACT_REGION` to control the exact location.
 
-With these scripts plus the updated workflow, Cirun can boot a GPU VM that immediately runs the rag-bench GPU tox suite inside the prepared container while reusing GitHub Action caches for dependencies and model weights.
+With these scripts plus the updated workflow, Cirun can boot a GPU VM that immediately runs the rag-bench GPU tox suite inside the prepared container while reusing GitHub Action caches for dependencies and model weights. The host image includes a boot-time service that, if it detects a local SSD (e.g., GCE NVMe local-ssd), will format/mount it at `/mnt/local-ssd` and set Docker’s `data-root` there so image extraction uses NVMe bandwidth. Attach a local SSD to runner VMs (and ensure the service account has Artifact Registry pull access) for the best pull times.

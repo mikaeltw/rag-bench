@@ -55,13 +55,14 @@ wait_for_ssh() {
       -- \
       -o ConnectTimeout=5 \
       -o StrictHostKeyChecking=no \
-      -o BatchMode=yes >/dev/null 2>&1; then
+      -o BatchMode=no >/dev/null 2>&1; then
       return 0
     fi
     echo "Waiting for SSH to become ready (${i}/${tries})..."
     sleep "${sleep_seconds}"
   done
   echo "SSH not reachable for ${INSTANCE_NAME} after $((tries * sleep_seconds))s." >&2
+  gcloud compute instances delete "${INSTANCE_NAME}" --zone "${GCP_ZONE}" --quiet
   return 1
 }
 
