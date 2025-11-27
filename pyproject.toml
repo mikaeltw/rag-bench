@@ -118,7 +118,7 @@ omit = []
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-#fail_under = 100.0            # <-- enforce 100% here
+#fail_under = 100.0
 
 # Normalize paths from different runners (Linux/macOS, tox, Actions)
 [tool.coverage.paths]

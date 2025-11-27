@@ -78,7 +78,7 @@ coverage:
 	$(TOX_CMD) -e py312
 	$(TOX_CMD) -e gpupy312
 	$(UV) run coverage combine
-	$(UV) run coverage report
+	$(UV) run coverage report --fail-under=100
 	@echo "Use 'make coverage-xml' for XML (Coveralls)"
 
 coverage-xml-html:

@@ -10,6 +10,8 @@ on:
 jobs:
   coverage-aggregate:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +33,7 @@ jobs:
           ls -la covparts
           python -m coverage combine covparts
           python -m coverage xml
-          python -m coverage report
+          python -m coverage report --fail-under=100
 
       - name: Coveralls finish
         uses: coverallsapp/github-action@v2
