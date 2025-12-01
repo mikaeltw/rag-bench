@@ -13,9 +13,7 @@ runners:
       REPOSITORY: rag-bench
       PACKAGE: rag-bench-gpu-tests
       VERSION: 0804786
-    gpu:
-      type: nvidia-tesla-t4
-      count: 1
+    gpu: nvidia-tesla-t4
     service_account: gpu-test-runners-sa@gpu-test-runners.iam.gserviceaccount.com
     service_account_scopes: [cloud-platform]
     username: ci-gpu-runner
