@@ -18,7 +18,7 @@ on:
 
 jobs:
   gpu-tests:
-    runs-on: [self-hosted, linux, x64, gpu, gcp]
+    runs-on: [self-hosted, cirun, linux, x64, gpu, gcp]
     strategy:
       fail-fast: false
     steps:
