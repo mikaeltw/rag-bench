@@ -16,6 +16,7 @@ jobs:
 
   GPU:
     uses: ./.github/workflows/_gpu.yml
+    secrets: inherit
     with:
       marker: "gpu"
       coverage_suffix: "gpupy"

@@ -19,6 +19,8 @@ on:
 jobs:
   gpu-tests:
     runs-on: [self-hosted, cirun, linux, x64, gpu, gcp]
+    env:
+      CIRUN_TOKEN: ${{ secrets.CIRUN_RAG_BENCH_API_KEY }}
     strategy:
       fail-fast: false
     steps:
