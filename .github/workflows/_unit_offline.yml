@@ -36,3 +36,4 @@ jobs:
           name: cov-${{ inputs.coverage_suffix }}
           path: .coverage.${{ inputs.coverage_suffix }}*
           if-no-files-found: error
+          include-hidden-files: true
