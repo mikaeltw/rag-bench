@@ -1,5 +1,5 @@
 runners:
-  gpu-runner:
+  - name: gpu-runner
     labels: [self-hosted, cirun, linux, x64, gpu, gcp]
     env:
       GCP_ARTIFACT_REGION: us-central1
