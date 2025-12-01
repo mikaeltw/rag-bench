@@ -5,6 +5,8 @@ runners:
     region: us-central1-b
     instance_type: n1-standard-4
     machine_image: projects/gpu-test-runners/global/images/family/rag-bench-gpu-host
+    preemptible: true
+    local_ssd_count: 1
     labels: [self-hosted, cirun, linux, x64, gpu, gcp]
     env:
       GCP_ARTIFACT_REGION: us-central1
