@@ -114,6 +114,7 @@ source = ["src/rag_bench", "examples"]
 branch = true
 parallel = true
 omit = []
+relative_files = true
 
 [tool.coverage.report]
 show_missing = true
@@ -125,6 +126,8 @@ skip_covered = true
 source = [
   "src/rag_bench",
   "examples",
+  "/workspace/src/rag_bench",
+  "/workspace/examples",
   "*/src/rag_bench",
   "*/examples",
   ".tox/*/site-packages/rag_bench",
