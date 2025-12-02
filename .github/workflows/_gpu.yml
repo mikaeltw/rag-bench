@@ -34,10 +34,7 @@ jobs:
           PACKAGE: ${{ vars.PACKAGE }}
           IMAGE_VERSION: ${{ vars.IMAGE_VERSION }}
         run: |
-          sudo -u ci-gpu-runner bash -lc '
-            whoami
-            ./scripts/docker/run_gpu_tests.sh
-          '
+          ./scripts/docker/run_gpu_tests.sh
 
       - name: Save coverage data
         if: always()
