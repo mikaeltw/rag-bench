@@ -44,4 +44,3 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: coverage.xml
           format: cobertura
-          base-path: ${{ github.workspace }}

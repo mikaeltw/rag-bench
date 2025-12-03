@@ -93,8 +93,7 @@ markers = [
   "integration: Integration tests for the CLIs"
 ]
 addopts = [
-  "--cov=rag_bench",
-  "--cov=examples",
+  "--cov",
   "--cov-branch",
   "--no-cov-on-fail",
   "--cov-report=",
@@ -113,28 +112,28 @@ filterwarnings = [
 branch = true
 parallel = true
 relative_files = false
-source = ["src/rag_bench", "examples",]
+source = ["."]
 
 # Normalize paths from different runners (Linux/macOS, tox, Actions)
 [tool.coverage.paths]
 rag_bench = [
   "src/rag_bench",
-  "/workspace/src/rag_bench",
   "*/src/rag_bench",
   ".tox/*/site-packages/rag_bench",
-  "**/site-packages/rag_bench"
+  "**/site-packages/rag_bench",
 ]
 examples = [
   "examples",
-  "/workspace/examples",
   "*/examples",
-  ".tox/*/site-packages/rag_bench",
-  "**/site-packages/rag_bench"
 ]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
+include = [
+  "src/rag_bench/*",
+  "examples/*",
+]
 omit = [
     ".venv/*",
     ".tox/*",
@@ -199,7 +198,7 @@ commands = [["mypy", "."]]
 
 # --- GPU env ---
 [tool.tox.env.gpupy312]
-package = "skip"
+package = "editable"
 base_python = ["python3.12"]
 deps = [".[dev]"]
 set_env = { RAG_BENCH_DEVICE = "gpu", COVERAGE_RCFILE = "pyproject.toml", COV_CORE_DATAFILE = ".coverage.{env_name}", COVERAGE_FILE = ".coverage.{env_name}" }
@@ -207,7 +206,7 @@ commands = [["pytest", "-m", "gpu or integration"]]
 
 # --- GPU env ---
 [tool.tox.env.gpupy313]
-package = "skip"
+package = "editable"
 base_python = ["python3.13"]
 deps = [".[dev]"]
 set_env = { RAG_BENCH_DEVICE = "gpu", COVERAGE_RCFILE = "pyproject.toml", COV_CORE_DATAFILE = ".coverage.{env_name}", COVERAGE_FILE = ".coverage.{env_name}" }
@@ -215,7 +214,7 @@ commands = [["pytest", "-m", "gpu or integration"]]
 
 # --- GPU env ---
 [tool.tox.env.gpupy314]
-package = "skip"
+package = "editable"
 base_python = ["python3.14"]
 deps = [".[dev]"]
 set_env = { RAG_BENCH_DEVICE = "gpu", COVERAGE_RCFILE = "pyproject.toml", COV_CORE_DATAFILE = ".coverage.{env_name}", COVERAGE_FILE = ".coverage.{env_name}", PYTHONWARNINGS = "ignore:Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.:UserWarning" }

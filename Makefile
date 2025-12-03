@@ -18,19 +18,21 @@ export CUDA_VISIBLE_DEVICES ?=
 
 help:
 	@echo "Common tasks:"
-	@echo "  make setup          Install uv (if needed)"
-	@echo "  make sync           Create/refresh local venv with dev deps"
-	@echo "  make dev            Lint + typecheck + unit/offline tests"
-	@echo "  make lint           flake8 + isort --check + black --check"
-	@echo "  make typecheck      mypy over src/"
-	@echo "  make format         Apply isort + black"
-	@echo "  make test           Unit/offline tests via tox for PY=$(PY)"
-	@echo "  make test-all       Matrix tests via tox (py312/13/14)"
-	@echo "  make test-gpu       GPU-marked tests via tox"
-	@echo "  make build          Build sdist + wheel"
-	@echo "  make coverage       Run tests and produce combined coverage report"
-	@echo "  make clean          Remove caches/build artefacts"
-	@echo "  make distclean      Also remove venvs and tox envs"
+	@echo "  make setup             Install uv (if needed)"
+	@echo "  make sync              Create/refresh local venv with dev deps"
+	@echo "  make dev               Lint + typecheck + unit/offline tests"
+	@echo "  make lint              flake8 + isort --check + black --check"
+	@echo "  make typecheck         mypy over src/"
+	@echo "  make format            Apply isort + black"
+	@echo "  make test              Unit/offline tests via tox for PY=$(PY)"
+	@echo "  make test-all          Matrix tests via tox (py312/13/14)"
+	@echo "  make test-gpu          GPU-marked tests via tox"
+	@echo "  make build             Build sdist + wheel"
+	@echo "  make coverage-erase    Delete all coverage files"
+	@echo "  make coverage          Run tests and produce combined coverage report"
+	@echo "  make coverage-xml-html Produce an xml and html coverage report"
+	@echo "  make clean             Remove caches/build artefacts"
+	@echo "  make distclean         Also remove venvs and tox envs"
 
 setup:
 	@command -v $(UVX) >/dev/null || (echo "Installing uv..."; \
@@ -79,12 +81,14 @@ coverage:
 	$(TOX_CMD) -e gpupy312
 	$(UV) run coverage combine
 	$(UV) run coverage report --fail-under=100
-	@echo "Use 'make coverage-xml' for XML (Coveralls)"
+	@echo "Use 'make coverage-xml-html' for XML (Coveralls) and html report"
 
 coverage-xml-html:
 	$(UV) run coverage xml
 	$(UV) run coverage html
 	@echo "Wrote coverage.xml and coverage.html"
+
+# -------- Clean --------
 
 clean:
 	@rm -rf .pytest_cache .mypy_cache dist build coverage.xml

@@ -1,9 +1,10 @@
 # rag-bench
 
+![Python Versions](https://img.shields.io/badge/Python-3.12%20%7C%203.13%20%7C%203.14-blue?logo=python)
 [![CI](https://github.com/mikaeltw/rag-bench/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mikaeltw/rag-bench/actions/workflows/ci.yml)
 [![Lint & Typecheck](https://github.com/mikaeltw/rag-bench/actions/workflows/lint-type-check.yml/badge.svg?branch=main)](https://github.com/mikaeltw/rag-bench/actions/workflows/lint-type-check.yml)
-[![Coverage Status](https://coveralls.io/repos/github/mikaeltw/rag-bench/badge.svg?branch=main)](https://coveralls.io/github/mikaeltw/rag-bench?branch=main)
-[![PyPI](https://img.shields.io/pypi/v/rag-bench.svg)](https://pypi.org/project/rag-bench/)
+[![Coverage Status](https://img.shields.io/coveralls/github/mikaeltw/rag-bench?branch=main&logo=coveralls)](https://coveralls.io/github/mikaeltw/rag-bench?branch=main)
+[![PyPI](https://img.shields.io/pypi/v/rag-bench.svg?logo=pypi&flat)](https://pypi.org/project/rag-bench/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Reproducible retrieval-augmented generation (RAG) baselines and an evaluation harness that makes it easy to compare pipelines across providers. Configure a pipeline in YAML, run one command, and collect HTML reports that stay consistent across experiments.
