@@ -1,6 +1,9 @@
-name: lint
+name: Lint & Typecheck
 on:
-  workflow_call:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   lint-typecheck:

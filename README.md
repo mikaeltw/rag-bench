@@ -1,6 +1,8 @@
 # rag-bench
 
-[![CI](https://img.shields.io/github/actions/workflow/status/mikaeltw/rag-bench/ci.yml?branch=main)](../../actions)
+[![CI](https://github.com/mikaeltw/rag-bench/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mikaeltw/rag-bench/actions/workflows/ci.yml)
+[![Lint & Typecheck](https://github.com/mikaeltw/rag-bench/actions/workflows/lint-type-check.yml/badge.svg?branch=main)](https://github.com/mikaeltw/rag-bench/actions/workflows/lint-type-check.yml)
+[![Coverage Status](https://coveralls.io/repos/github/mikaeltw/rag-bench/badge.svg?branch=main)](https://coveralls.io/github/mikaeltw/rag-bench?branch=main)
 [![PyPI](https://img.shields.io/pypi/v/rag-bench.svg)](https://pypi.org/project/rag-bench/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 

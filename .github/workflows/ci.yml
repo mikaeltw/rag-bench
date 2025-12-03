@@ -3,11 +3,9 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  LintTypecheck:
-    uses: ./.github/workflows/_lint-type-check.yml
-
   UnitOffline:
     uses: ./.github/workflows/_unit_offline.yml
     with:
