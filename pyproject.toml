@@ -112,7 +112,7 @@ filterwarnings = [
 [tool.coverage.run]
 branch = true
 parallel = true
-relative_files = true
+relative_files = false
 source = ["src/rag_bench", "examples",]
 
 # Normalize paths from different runners (Linux/macOS, tox, Actions)
