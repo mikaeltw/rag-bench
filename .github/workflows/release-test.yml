@@ -71,10 +71,11 @@ jobs:
           PKG_VERSION: ${{ steps.version.outputs.PKG_VERSION }}
         run: |
           echo "PKG_VERSION: $PKG_VERSION"
+          echo "PKG_VERSION: \"${PKG_VERSION}\"" > recipe/_pkg_version_config.yaml
           ls -la dist/
           micromamba activate conda-build-env
           conda build recipe \
-            --set-env PKG_VERSION="${PKG_VERSION}" \
+            -m recipe/_pkg_version_config.yaml \
             -c conda-forge \
             --override-channels \
             --no-anaconda-upload
