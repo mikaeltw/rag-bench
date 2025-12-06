@@ -1,11 +1,25 @@
-# rag-bencher
+<p align="center">
+  <img src="assets/rag-bencher-logo.png" alt="rag-bench logo" width="220"/>
+</p>
+
+<h1 align="center">rag-bencher</h1>
+
+<p align="center">
+  <b>Reproducible, extensible, multi-provider benchmarking for Retrieval-Augmented Generation (RAG) systems.</b>
+</p>
 
 ![Python Versions](https://img.shields.io/badge/Python-3.12%20%7C%203.13%20%7C%203.14-blue?logo=python)
 [![CI](https://github.com/mikaeltw/rag-bencher/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mikaeltw/rag-bencher/actions/workflows/ci.yml)
 [![Lint & Typecheck](https://github.com/mikaeltw/rag-bencher/actions/workflows/lint-type-check.yml/badge.svg?branch=main)](https://github.com/mikaeltw/rag-bencher/actions/workflows/lint-type-check.yml)
+[![Build & Test release](https://github.com/mikaeltw/rag-bencher/actions/workflows/release-test.yml/badge.svg?branch=main)](https://github.com/mikaeltw/rag-bencher/actions/workflows/release-test.yml)
 [![Coverage Status](https://img.shields.io/coveralls/github/mikaeltw/rag-bencher?branch=main&logo=coveralls)](https://coveralls.io/github/mikaeltw/rag-bencher?branch=main)
 [![PyPI](https://img.shields.io/pypi/v/rag-bencher.svg?logo=pypi&flat)](https://pypi.org/project/rag-bencher/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Repo size](https://img.shields.io/github/repo-size/mikaeltw/rag-bencher)
+![Code size](https://img.shields.io/github/languages/code-size/mikaeltw/rag-bencher)
+
+---
+
 
 Reproducible retrieval-augmented generation (RAG) baselines and an evaluation harness that makes it easy to compare pipelines across providers. Configure a pipeline in YAML, run one command, and collect HTML reports that stay consistent across experiments.
 

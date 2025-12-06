@@ -1,4 +1,4 @@
-name: Release Test (conda-gated TestPyPI)
+name: Build & Release test
 
 on:
   push:
@@ -43,7 +43,10 @@ jobs:
           PKG_VERSION: "0.0.0.dev0"
         run: |
           micromamba activate conda-build-env
-          conda build recipe -c conda-forge
+          conda build recipe -c conda-forge \
+              --override-channels \
+              --no-anaconda-upload \
+              --variants "{ 'version': '${PKG_VERSION}' }"
 
   publish-testpypi:
     name: Publish to TestPyPI & smoke-test (pip)
