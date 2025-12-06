@@ -16,8 +16,10 @@ requirements:
   host:
     - python >=3.12,<3.15
     - pip
+    - numpy {{ numpy }}
   run:
     - python >=3.12,<3.15
+    - numpy >=1.26
 
 test:
   imports:
